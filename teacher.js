@@ -1,91 +1,50 @@
-/* ==========================================================
-   DREAM YOUTH TEACHER — teacher.js
-   별도의 로그인 없이, 이름만 입력하면 바로 자료를 볼 수 있습니다.
-   ========================================================== */
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1226C9" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>DREAM YOUTH · 교육목자 자료실</title>
 
-const $ = (sel) => document.querySelector(sel);
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 
-const NAME_KEY = "dy_teacher_name";
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="teacher.css" />
+</head>
+<body class="admin-body">
 
-async function loadTeacherData() {
-  const res = await fetch(`teacher-data.json?v=${Date.now()}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("데이터를 불러오지 못했어요.");
-  return res.json();
-}
+  <header class="admin-header">
+    <span class="brand">DREAM YOUTH</span>
+    <span class="admin-tag">교육목자</span>
+  </header>
 
-function renderWeeks(data) {
-  const wrap = $("#weekList");
-  wrap.innerHTML = "";
+  <main class="admin-main">
 
-  data.weeks.forEach((week) => {
-    const card = document.createElement("article");
-    card.className = "week-card";
-    card.innerHTML = `
-      <span class="week-date">${week.dateLabel}</span>
-      <h2 class="week-song-title">${week.songTitle}</h2>
+    <!-- 이름 입력 화면 -->
+    <section id="gateView" class="admin-card">
+      <h1 class="admin-h1">교육목자 자료실</h1>
+      <p class="admin-desc">선생님 성함을 입력하고 들어와주세요.</p>
 
-      ${
-        week.sheetImage
-          ? `<div class="sheet-frame"><img src="${week.sheetImage}" alt="${week.songTitle} 악보" loading="lazy" /></div>`
-          : ""
-      }
+      <label class="admin-label">이름</label>
+      <input id="nameInput" class="admin-input" type="text" placeholder="예: 김OO" />
 
-      <p class="week-block-title">설교 핵심 요약</p>
-      <div class="message-box">
-        <p class="msg-title">${week.messageTitle}</p>
-        <p class="msg-summary">${week.messageSummary}</p>
-      </div>
+      <button id="btnEnter" class="admin-btn admin-btn-primary" style="margin-top:14px;">들어가기</button>
+    </section>
 
-      <p class="week-block-title">기도제목</p>
-      <ul class="bullet-list">
-        ${week.prayerPoints.map((p) => `<li>${p}</li>`).join("")}
-      </ul>
+    <!-- 자료 화면 -->
+    <div id="contentView" class="hidden">
+      <p id="welcomeMsg" class="admin-desc" style="margin-bottom:14px;"></p>
+      <div id="weekList"></div>
+    </div>
 
-      <p class="week-block-title">공지사항</p>
-      <ul class="bullet-list">
-        ${week.notices.map((n) => `<li>${n}</li>`).join("")}
-      </ul>
-    `;
-    wrap.appendChild(card);
-  });
-}
+  </main>
 
-async function init() {
-  let data;
-  try {
-    data = await loadTeacherData();
-  } catch (err) {
-    $("#gateView").innerHTML = `<p class="admin-error">${err.message}</p>`;
-    return;
-  }
-
-  const savedName = localStorage.getItem(NAME_KEY);
-  if (savedName) {
-    showContent(data, savedName);
-    return;
-  }
-
-  $("#btnEnter").addEventListener("click", () => enter(data));
-  $("#nameInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enter(data);
-  });
-}
-
-function enter(data) {
-  const name = $("#nameInput").value.trim();
-  if (!name) {
-    $("#nameInput").focus();
-    return;
-  }
-  localStorage.setItem(NAME_KEY, name);
-  showContent(data, name);
-}
-
-function showContent(data, name) {
-  $("#gateView").classList.add("hidden");
-  $("#contentView").classList.remove("hidden");
-  $("#welcomeMsg").textContent = `${name} 선생님, 환영합니다 🙏`;
-  renderWeeks(data);
-}
-
-init();
+  <script src="teacher.js"></script>
+</body>
+</html>

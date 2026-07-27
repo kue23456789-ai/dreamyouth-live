@@ -1,180 +1,543 @@
 /* ==========================================================
-   DREAM YOUTH LIVE — app.js
-   data.json 하나만 수정하면 화면 전체가 바뀝니다.
-   30초마다 data.json을 다시 읽어와 "현재 진행 중" 순서를
-   학생들 화면에 자동 반영합니다. (새로고침 불필요)
+   DREAM YOUTH ADMIN — admin.js
+   토큰이나 로그인 없이 바로 열립니다.
+   현재 사이트에 있는 data.json / teacher-data.json을 불러와서
+   편집한 뒤 "다운로드" 버튼을 누르면 새 파일이 다운로드됩니다.
+   그 파일을 GitHub에 다시 업로드(드래그)하면 사이트에 반영돼요.
    ========================================================== */
 
-const POLL_INTERVAL = 30 * 1000; // 30초마다 갱신
-let lastRenderedJSON = "";
-let isFirstRender = true;
-
-/* ---------- 유틸 ---------- */
-
 const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-function todayString() {
-  const d = new Date();
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]}) 주일예배`;
+let data = null;         // 학생용 메인 데이터 (data.json)
+let teacherData = null;  // 교육목자 자료 (teacher-data.json)
+let dirty = false;       // 저장 안 된 변경사항이 있는지
+let pendingImages = {};  // { weekIndex: { dataUrl, file, ext } } 다운로드 전 임시 보관
+
+/* ---------- 파일 다운로드 헬퍼 ---------- */
+
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
-/* ---------- 데이터 로드 ---------- */
+function downloadBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
-async function loadData() {
+/* ---------- 데이터 불러오기 (현재 배포된 사이트에서 읽기) ---------- */
+
+async function loadAll() {
   try {
-    // 캐시를 피하기 위해 timestamp를 붙여서 요청
-    const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
+    const [dRes, tRes] = await Promise.all([
+      fetch(`data.json?v=${Date.now()}`, { cache: "no-store" }),
+      fetch(`teacher-data.json?v=${Date.now()}`, { cache: "no-store" }).catch(() => null),
+    ]);
 
-    // 내용이 바뀐 경우에만 다시 그리기 (불필요한 깜빡임 방지)
-    const raw = JSON.stringify(data);
-    if (raw !== lastRenderedJSON) {
-      lastRenderedJSON = raw;
-      renderAll(data);
+    if (!dRes.ok) throw new Error("data.json을 불러오지 못했어요.");
+    data = await dRes.json();
+
+    if (tRes && tRes.ok) {
+      teacherData = await tRes.json();
+    } else {
+      teacherData = { weeks: [] };
     }
+
+    $("#loadingView").classList.add("hidden");
+    $("#editView").classList.remove("hidden");
+    renderAllPanels();
   } catch (err) {
-    console.error("data.json을 불러오지 못했습니다:", err);
-    // 최초 로드 실패 시 안내
-    if (!lastRenderedJSON) {
-      $("#worshipMessage").textContent =
-        "데이터를 불러오지 못했어요. 잠시 후 자동으로 다시 시도합니다.";
-    }
+    $("#loadingMsg").textContent =
+      "불러오기 실패: " + err.message + " (이 페이지를 GitHub Pages 주소로 열었는지 확인해주세요)";
   }
 }
 
-/* ---------- 렌더링 ---------- */
+/* ---------- 탭 전환 ---------- */
 
-function renderAll(data) {
-  renderHero(data);
-  renderOrder(data);
-  renderSongs(data.songs);
-  renderNotices(data.notices);
-  renderServants(data.servants);
-  $("#updatedAt").textContent = `콘텐츠 업데이트: ${data.meta.updated}`;
-  isFirstRender = false;
+$("#adminTabs").addEventListener("click", (e) => {
+  const tabBtn = e.target.closest(".admin-tab");
+  if (!tabBtn) return;
+  $$(".admin-tab").forEach((t) => t.classList.remove("active"));
+  tabBtn.classList.add("active");
+  const target = tabBtn.dataset.tab;
+  $$(".admin-panel").forEach((p) =>
+    p.classList.toggle("hidden", p.dataset.panel !== target)
+  );
+});
+
+/* ---------- 변경 감지 ---------- */
+
+function markDirty() {
+  dirty = true;
+  $("#saveBar").classList.remove("hidden");
+  const status = $("#saveStatus");
+  status.textContent = "저장되지 않은 변경사항이 있어요 — 다운로드 후 GitHub에 올려주세요";
+  status.className = "save-status";
 }
 
-function renderHero(data) {
-  const w = data.worship;
-  $("#todayDate").textContent = todayString();
-  $("#worshipTitle").textContent = w.title;
-  $("#worshipMessage").textContent = w.message;
-  $("#worshipVerse").textContent = w.verse;
-  $("#worshipPreacher").textContent = w.preacher;
+document.addEventListener("input", (e) => {
+  if (e.target.closest("#editView")) markDirty();
+});
 
-  // 예배 전(currentOrder < 0)에는 LIVE 배지를 끔
-  const live = data.live.currentOrder >= 0;
-  const badge = $("#liveBadge");
-  badge.classList.toggle("off", !live);
-  badge.innerHTML = live
-    ? '<span class="dot"></span>LIVE'
-    : "SOON";
+/* ---------- 전체 렌더링 ---------- */
+
+function renderAllPanels() {
+  renderWorship();
+  renderLiveButtons();
+  renderOrder();
+  renderSongs();
+  renderNotices();
+  renderServants();
+  renderTeacherWeeks();
 }
 
-function renderOrder(data) {
-  const current = data.live.currentOrder;
-  const list = $("#orderList");
-  list.innerHTML = "";
+/* ----- 예배 정보 ----- */
 
+function renderWorship() {
+  $("#wTitle").value = data.worship.title || "";
+  $("#wMessage").value = data.worship.message || "";
+  $("#wVerse").value = data.worship.verse || "";
+  $("#wPreacher").value = data.worship.preacher || "";
+}
+
+function collectWorship() {
+  data.worship.title = $("#wTitle").value.trim();
+  data.worship.message = $("#wMessage").value.trim();
+  data.worship.verse = $("#wVerse").value.trim();
+  data.worship.preacher = $("#wPreacher").value.trim();
+}
+
+/* ----- 빠른 진행 제어 ----- */
+
+function renderLiveButtons() {
+  const wrap = $("#liveButtons");
+  wrap.innerHTML = "";
   data.order.forEach((item, i) => {
-    const li = document.createElement("li");
-    li.className = "order-item";
-    if (current >= 0 && i < current) li.classList.add("done");
-    if (i === current) li.classList.add("now");
-
-    li.innerHTML = `
-      <span class="order-time">${item.time}</span>
-      <div>
-        <div class="order-name">${item.name}</div>
-        <div class="order-detail">${item.detail}</div>
-      </div>
-      ${i === current ? '<span class="now-chip"><span class="dot"></span>NOW</span>' : ""}
-    `;
-    list.appendChild(li);
-  });
-
-  // 현재 순서로 부드럽게 스크롤 (예배 중일 때만, 최초 렌더 제외)
-  const nowEl = list.querySelector(".order-item.now");
-  if (nowEl && !isFirstRender) {
-    // 사용자가 다른 곳을 보고 있을 수 있으므로 화면 안에 있을 때만
-    const rect = $("#orderSection").getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom > 0) {
-      nowEl.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }
-}
-
-function renderSongs(songs) {
-  const list = $("#songList");
-  list.innerHTML = "";
-
-  songs.forEach((s) => {
-    const li = document.createElement("li");
-    li.className = "track" + (s.final ? " final" : "");
-    li.innerHTML = `
-      <span class="track-no">${String(s.no).padStart(2, "0")}</span>
-      <div>
-        ${s.final ? '<span class="final-tag">결단 찬양</span>' : ""}
-        <div class="track-title">${s.title}</div>
-        ${s.line ? `<span class="track-line">${s.line}</span>` : ""}
-      </div>
-      ${s.key ? `<span class="track-key">${s.key}</span>` : ""}
-    `;
-    list.appendChild(li);
-  });
-}
-
-function renderNotices(notices) {
-  const grid = $("#noticeGrid");
-  grid.innerHTML = "";
-
-  notices.forEach((n) => {
-    const card = document.createElement("article");
-    card.className = "notice-card" + (n.highlight ? " highlight" : "");
-    card.innerHTML = `
-      <span class="notice-badge">${n.badge}</span>
-      <h3 class="notice-title">${n.title}</h3>
-      <p class="notice-desc">${n.desc}</p>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-function renderServants(weeks) {
-  const tabs = $("#servantTabs");
-  tabs.innerHTML = "";
-
-  weeks.forEach((week, i) => {
     const btn = document.createElement("button");
-    btn.className = "servant-tab";
-    btn.textContent = week.label;
-    btn.setAttribute("role", "tab");
-    btn.setAttribute("aria-selected", i === 0 ? "true" : "false");
-    btn.addEventListener("click", () => {
-      tabs.querySelectorAll(".servant-tab")
-          .forEach((t) => t.setAttribute("aria-selected", "false"));
-      btn.setAttribute("aria-selected", "true");
-      renderServantTable(week);
+    btn.className = "live-btn" + (data.live.currentOrder === i ? " active" : "");
+    btn.innerHTML = `<span class="live-btn-time">${item.time}</span><span>${item.name}</span>`;
+    btn.addEventListener("click", () => setLiveOrder(i));
+    wrap.appendChild(btn);
+  });
+}
+
+function setLiveOrder(index) {
+  collectAllPanels();
+  data.live.currentOrder = index;
+  downloadDataJson(`Set current order to ${index}`);
+  renderLiveButtons();
+}
+
+$("#btnLiveOff").addEventListener("click", () => {
+  collectAllPanels();
+  data.live.currentOrder = -1;
+  downloadDataJson("Reset live order");
+  renderLiveButtons();
+});
+
+function downloadDataJson() {
+  data.meta.updated = new Date().toISOString().slice(0, 10);
+  downloadText("data.json", JSON.stringify(data, null, 2));
+  dirty = false;
+  const status = $("#saveStatus");
+  status.textContent = "data.json 다운로드 완료! 이 파일을 GitHub에 올려주세요.";
+  status.className = "save-status ok";
+  $("#saveBar").classList.remove("hidden");
+}
+
+/* ----- 예배 순서 ----- */
+
+function renderOrder() {
+  const wrap = $("#orderRows");
+  wrap.innerHTML = "";
+  data.order.forEach((item, i) => {
+    const row = document.createElement("div");
+    row.className = "repeat-row";
+    row.innerHTML = `
+      <div class="repeat-row-head">
+        <span class="repeat-row-title">순서 ${i + 1}</span>
+        <button class="admin-btn admin-btn-del" data-del="order" data-idx="${i}">삭제</button>
+      </div>
+      <div class="field-grid-2">
+        <div>
+          <label class="admin-label">시간</label>
+          <input class="admin-input" data-field="time" data-arr="order" data-idx="${i}" value="${escAttr(item.time)}" />
+        </div>
+        <div>
+          <label class="admin-label">이름</label>
+          <input class="admin-input" data-field="name" data-arr="order" data-idx="${i}" value="${escAttr(item.name)}" />
+        </div>
+      </div>
+      <label class="admin-label">설명</label>
+      <input class="admin-input" data-field="detail" data-arr="order" data-idx="${i}" value="${escAttr(item.detail)}" />
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+/* ----- 찬양 리스트 ----- */
+
+function renderSongs() {
+  const wrap = $("#songRows");
+  wrap.innerHTML = "";
+  data.songs.forEach((s, i) => {
+    const row = document.createElement("div");
+    row.className = "repeat-row";
+    row.innerHTML = `
+      <div class="repeat-row-head">
+        <span class="repeat-row-title">찬양 ${i + 1}</span>
+        <button class="admin-btn admin-btn-del" data-del="songs" data-idx="${i}">삭제</button>
+      </div>
+      <label class="admin-label">제목</label>
+      <input class="admin-input" data-field="title" data-arr="songs" data-idx="${i}" value="${escAttr(s.title)}" />
+      <div class="field-grid-2">
+        <div>
+          <label class="admin-label">가사 한 줄 (선택)</label>
+          <input class="admin-input" data-field="line" data-arr="songs" data-idx="${i}" value="${escAttr(s.line || "")}" />
+        </div>
+        <div>
+          <label class="admin-label">키 (선택)</label>
+          <input class="admin-input" data-field="key" data-arr="songs" data-idx="${i}" value="${escAttr(s.key || "")}" />
+        </div>
+      </div>
+      <label class="admin-checkbox">
+        <input type="checkbox" data-field="final" data-arr="songs" data-idx="${i}" ${s.final ? "checked" : ""} />
+        결단 찬양으로 강조하기
+      </label>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+/* ----- 공지사항 ----- */
+
+function renderNotices() {
+  const wrap = $("#noticeRows");
+  wrap.innerHTML = "";
+  data.notices.forEach((n, i) => {
+    const row = document.createElement("div");
+    row.className = "repeat-row";
+    row.innerHTML = `
+      <div class="repeat-row-head">
+        <span class="repeat-row-title">공지 ${i + 1}</span>
+        <button class="admin-btn admin-btn-del" data-del="notices" data-idx="${i}">삭제</button>
+      </div>
+      <div class="field-grid-2">
+        <div>
+          <label class="admin-label">배지</label>
+          <input class="admin-input" data-field="badge" data-arr="notices" data-idx="${i}" value="${escAttr(n.badge)}" />
+        </div>
+        <div>
+          <label class="admin-label">제목</label>
+          <input class="admin-input" data-field="title" data-arr="notices" data-idx="${i}" value="${escAttr(n.title)}" />
+        </div>
+      </div>
+      <label class="admin-label">설명</label>
+      <textarea class="admin-textarea" rows="2" data-field="desc" data-arr="notices" data-idx="${i}">${escHtml(n.desc)}</textarea>
+      <label class="admin-checkbox">
+        <input type="checkbox" data-field="highlight" data-arr="notices" data-idx="${i}" ${n.highlight ? "checked" : ""} />
+        강조 카드로 표시 (파란 배경)
+      </label>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+/* ----- 섬김 명단 ----- */
+
+function renderServants() {
+  const wrap = $("#servantWeeks");
+  wrap.innerHTML = "";
+  data.servants.forEach((week, wi) => {
+    const block = document.createElement("div");
+    block.className = "week-block";
+    block.innerHTML = `
+      <div class="week-block-head">
+        <input class="admin-input" data-field="label" data-week="${wi}" value="${escAttr(week.label)}" placeholder="예: 8월 2일 (다음 주)" />
+        <button class="admin-btn admin-btn-del" data-delweek="${wi}">주차 삭제</button>
+      </div>
+      <div data-rolewrap="${wi}"></div>
+      <button class="admin-btn admin-btn-add" data-addrole="${wi}" style="margin-top:4px;">+ 역할 추가</button>
+    `;
+    wrap.appendChild(block);
+
+    const roleWrap = block.querySelector(`[data-rolewrap="${wi}"]`);
+    week.roles.forEach((r, ri) => {
+      const roleRow = document.createElement("div");
+      roleRow.className = "role-row";
+      roleRow.innerHTML = `
+        <input class="admin-input" data-field="role" data-week="${wi}" data-role="${ri}" value="${escAttr(r.role)}" placeholder="역할" style="flex:1" />
+        <input class="admin-input" data-field="name" data-week="${wi}" data-role="${ri}" value="${escAttr(r.name)}" placeholder="이름" style="flex:1" />
+        <button class="admin-btn admin-btn-del" data-delrole="${wi}:${ri}">삭제</button>
+      `;
+      roleWrap.appendChild(roleRow);
     });
-    tabs.appendChild(btn);
-  });
-
-  if (weeks.length) renderServantTable(weeks[0]);
-}
-
-function renderServantTable(week) {
-  const body = $("#servantBody");
-  body.innerHTML = "";
-  week.roles.forEach((r) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<th scope="row">${r.role}</th><td>${r.name}</td>`;
-    body.appendChild(tr);
   });
 }
+
+/* ---------- 추가/삭제 이벤트 (위임) ---------- */
+
+document.addEventListener("click", (e) => {
+  const addBtn = e.target.closest("[data-add]");
+  if (addBtn) {
+    collectAllPanels();
+    const type = addBtn.dataset.add;
+    if (type === "order") data.order.push({ time: "", name: "새 순서", detail: "", type: "" });
+    if (type === "songs") data.songs.push({ no: data.songs.length + 1, title: "새 찬양", key: "", line: "", final: false });
+    if (type === "notices") data.notices.push({ badge: "공지", title: "새 공지", desc: "", highlight: false });
+    if (type === "servants") data.servants.push({ label: "새 주차", roles: [{ role: "대표기도", name: "" }] });
+    renderAllPanels();
+    markDirty();
+    return;
+  }
+
+  const delBtn = e.target.closest("[data-del]");
+  if (delBtn) {
+    collectAllPanels();
+    const type = delBtn.dataset.del;
+    const idx = Number(delBtn.dataset.idx);
+    data[type].splice(idx, 1);
+    renderAllPanels();
+    markDirty();
+    return;
+  }
+
+  const addRoleBtn = e.target.closest("[data-addrole]");
+  if (addRoleBtn) {
+    collectAllPanels();
+    const wi = Number(addRoleBtn.dataset.addrole);
+    data.servants[wi].roles.push({ role: "", name: "" });
+    renderServants();
+    markDirty();
+    return;
+  }
+
+  const delRoleBtn = e.target.closest("[data-delrole]");
+  if (delRoleBtn) {
+    collectAllPanels();
+    const [wi, ri] = delRoleBtn.dataset.delrole.split(":").map(Number);
+    data.servants[wi].roles.splice(ri, 1);
+    renderServants();
+    markDirty();
+    return;
+  }
+
+  const delWeekBtn = e.target.closest("[data-delweek]");
+  if (delWeekBtn) {
+    collectAllPanels();
+    const wi = Number(delWeekBtn.dataset.delweek);
+    data.servants.splice(wi, 1);
+    renderServants();
+    markDirty();
+    return;
+  }
+});
+
+/* ---------- 폼 -> data 객체로 값 수집 ---------- */
+
+function escAttr(str) {
+  return String(str ?? "").replace(/"/g, "&quot;");
+}
+function escHtml(str) {
+  return String(str ?? "").replace(/</g, "&lt;");
+}
+
+function collectAllPanels() {
+  collectWorship();
+  collectArrayPanel("order");
+  collectArrayPanel("songs");
+  collectArrayPanel("notices");
+  collectServants();
+}
+
+function collectArrayPanel(type) {
+  $$(`[data-arr="${type}"]`).forEach((el) => {
+    const idx = Number(el.dataset.idx);
+    const field = el.dataset.field;
+    if (!data[type][idx]) return;
+    if (el.type === "checkbox") {
+      data[type][idx][field] = el.checked;
+    } else {
+      data[type][idx][field] = el.value.trim();
+    }
+  });
+}
+
+function collectServants() {
+  $$('[data-week]').forEach((el) => {
+    const wi = Number(el.dataset.week);
+    if (!data.servants[wi]) return;
+    if (el.dataset.role !== undefined) {
+      const ri = Number(el.dataset.role);
+      if (!data.servants[wi].roles[ri]) return;
+      data.servants[wi].roles[ri][el.dataset.field] = el.value.trim();
+    } else {
+      data.servants[wi][el.dataset.field] = el.value.trim();
+    }
+  });
+}
+
+/* ---------- 교육목자 자료 (선생님 전용 페이지) ---------- */
+
+function renderTeacherWeeks() {
+  const wrap = $("#teacherWeeks");
+  wrap.innerHTML = "";
+
+  teacherData.weeks.forEach((week, i) => {
+    const block = document.createElement("div");
+    block.className = "week-block";
+    const previewSrc = pendingImages[i] ? pendingImages[i].dataUrl : week.sheetImage || "";
+
+    block.innerHTML = `
+      <div class="repeat-row-head">
+        <span class="repeat-row-title">${week.dateLabel || "새 주차"}</span>
+        <button class="admin-btn admin-btn-del" data-delteacherweek="${i}">주차 삭제</button>
+      </div>
+
+      <div class="field-grid-2">
+        <div>
+          <label class="admin-label">날짜 라벨</label>
+          <input class="admin-input" data-tfield="dateLabel" data-tidx="${i}" value="${escAttr(week.dateLabel)}" placeholder="예: 2026.8.2" />
+        </div>
+        <div>
+          <label class="admin-label">결단 찬양 제목</label>
+          <input class="admin-input" data-tfield="songTitle" data-tidx="${i}" value="${escAttr(week.songTitle)}" />
+        </div>
+      </div>
+
+      <label class="admin-label">결단 찬양 악보 이미지</label>
+      ${previewSrc ? `<div class="sheet-frame" style="max-width:220px;"><img src="${previewSrc}" style="width:100%;display:block;" /></div>` : ""}
+      <input type="file" accept="image/*" class="admin-input" data-timgidx="${i}" style="padding:8px;" />
+      <p class="admin-desc" style="margin:6px 0 0; font-size:12px;">
+        이미지를 선택하면 저장 시 <b>${week.id || "날짜"}.jpg</b> 라는 이름으로 따로 다운로드돼요.
+        그 파일을 GitHub의 <b>sheets</b> 폴더 안에 올려주세요.
+      </p>
+
+      <label class="admin-label">설교 제목 (핵심 메시지 요약 위 제목)</label>
+      <input class="admin-input" data-tfield="messageTitle" data-tidx="${i}" value="${escAttr(week.messageTitle)}" />
+
+      <label class="admin-label">설교 핵심 메시지 요약</label>
+      <textarea class="admin-textarea" rows="2" data-tfield="messageSummary" data-tidx="${i}">${escHtml(week.messageSummary)}</textarea>
+
+      <label class="admin-label">기도제목 (한 줄에 하나씩)</label>
+      <textarea class="admin-textarea" rows="3" data-tfield="prayerPoints" data-tidx="${i}">${escHtml((week.prayerPoints || []).join("\n"))}</textarea>
+
+      <label class="admin-label">공지사항 (한 줄에 하나씩)</label>
+      <textarea class="admin-textarea" rows="4" data-tfield="notices" data-tidx="${i}">${escHtml((week.notices || []).join("\n"))}</textarea>
+    `;
+    wrap.appendChild(block);
+  });
+}
+
+function collectTeacherWeeks() {
+  $$('[data-tidx]').forEach((el) => {
+    const idx = Number(el.dataset.tidx);
+    const field = el.dataset.tfield;
+    if (!teacherData.weeks[idx]) return;
+    if (field === "prayerPoints" || field === "notices") {
+      teacherData.weeks[idx][field] = el.value
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    } else {
+      teacherData.weeks[idx][field] = el.value.trim();
+    }
+  });
+}
+
+$("#btnAddTeacherWeek").addEventListener("click", () => {
+  collectTeacherWeeks();
+  const today = new Date();
+  const id = today.toISOString().slice(0, 10);
+  teacherData.weeks.unshift({
+    id,
+    dateLabel: `${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`,
+    songTitle: "",
+    sheetImage: "",
+    messageTitle: "",
+    messageSummary: "",
+    prayerPoints: [],
+    notices: [],
+  });
+  pendingImages = {};
+  renderTeacherWeeks();
+  markDirty();
+});
+
+document.addEventListener("click", (e) => {
+  const delBtn = e.target.closest("[data-delteacherweek]");
+  if (delBtn) {
+    collectTeacherWeeks();
+    const idx = Number(delBtn.dataset.delteacherweek);
+    teacherData.weeks.splice(idx, 1);
+    pendingImages = {};
+    renderTeacherWeeks();
+    markDirty();
+  }
+});
+
+document.addEventListener("change", (e) => {
+  const fileInput = e.target.closest("[data-timgidx]");
+  if (!fileInput || !fileInput.files[0]) return;
+
+  const idx = Number(fileInput.dataset.timgidx);
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingImages[idx] = { dataUrl: reader.result, file };
+    markDirty();
+    renderTeacherWeeks();
+  };
+  reader.readAsDataURL(file);
+});
+
+$("#btnSaveTeacher").addEventListener("click", () => {
+  collectTeacherWeeks();
+
+  // 새로 선택된 이미지들을 올바른 파일명으로 각각 다운로드
+  Object.keys(pendingImages).forEach((idxStr) => {
+    const idx = Number(idxStr);
+    const week = teacherData.weeks[idx];
+    if (!week) return;
+    const img = pendingImages[idx];
+    const ext = (img.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const filename = `${week.id || "week" + idx}.${ext}`;
+    downloadBlob(filename, img.file);
+    week.sheetImage = `sheets/${filename}`;
+  });
+  pendingImages = {};
+
+  downloadText("teacher-data.json", JSON.stringify(teacherData, null, 2));
+  dirty = false;
+
+  const msgEl = $("#teacherSaveMsg");
+  msgEl.textContent = "다운로드 완료! teacher-data.json" +
+    (Object.keys(pendingImages).length ? "과 이미지 파일" : "") +
+    "을 GitHub에 올려주세요.";
+  renderTeacherWeeks();
+});
+
+/* ---------- 전체 저장 ---------- */
+
+$("#btnSaveAll").addEventListener("click", () => {
+  collectAllPanels();
+  downloadDataJson();
+});
 
 /* ---------- 시작 ---------- */
 
-loadData();
-setInterval(loadData, POLL_INTERVAL);
+loadAll();
