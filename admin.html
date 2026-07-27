@@ -84,6 +84,7 @@
         <button class="admin-tab" data-tab="songs">찬양 리스트</button>
         <button class="admin-tab" data-tab="notices">공지사항</button>
         <button class="admin-tab" data-tab="servants">섬김 명단</button>
+        <button class="admin-tab" data-tab="teacher">교육목자 자료</button>
       </nav>
 
       <!-- 예배 정보 -->
@@ -123,6 +124,21 @@
       <section class="admin-card admin-panel hidden" data-panel="servants">
         <div id="servantWeeks"></div>
         <button class="admin-btn admin-btn-add" data-add="servants">+ 주차 추가</button>
+      </section>
+
+      <!-- 교육목자 자료 (선생님 전용 페이지) -->
+      <section class="admin-card admin-panel hidden" data-panel="teacher">
+        <h2 class="admin-h2">🔒 선생님 전용 페이지 설정</h2>
+        <p class="admin-desc">
+          여기서 편집한 내용은 학생용 메인 화면이 아니라 <b>선생님 전용 페이지(teacher.html)</b>에만 보여요.
+          선생님들은 이름만 입력하면 바로 볼 수 있어요 (별도 비밀번호 없음).
+        </p>
+
+        <div id="teacherWeeks" style="margin-top:18px;"></div>
+        <button id="btnAddTeacherWeek" class="admin-btn admin-btn-add">+ 새 주차 추가</button>
+
+        <button id="btnSaveTeacher" class="admin-btn admin-btn-primary" style="margin-top:16px;">교육목자 자료 저장</button>
+        <p id="teacherSaveMsg" class="admin-desc" style="margin-top:6px;"></p>
       </section>
 
     </div>

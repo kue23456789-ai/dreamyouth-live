@@ -1,0 +1,97 @@
+/* ==========================================================
+   DREAM YOUTH TEACHER — teacher.css
+   admin.css / style.css의 변수를 그대로 사용합니다.
+   ========================================================== */
+
+.week-card {
+  background: #fff;
+  border: 1.5px solid #e3e7f8;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.week-date {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--blue);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.week-song-title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.sheet-frame {
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg);
+  margin-bottom: 16px;
+  border: 1px solid #e3e7f8;
+}
+
+.sheet-frame img {
+  width: 100%;
+  display: block;
+}
+
+.week-block-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--gray);
+  margin: 16px 0 8px;
+  text-transform: uppercase;
+}
+
+.message-box {
+  background: var(--blue-soft);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.message-box .msg-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--blue);
+  margin-bottom: 6px;
+  word-break: keep-all;
+}
+
+.message-box .msg-summary {
+  font-size: 14.5px;
+  color: var(--ink);
+  word-break: keep-all;
+}
+
+.bullet-list {
+  list-style: none;
+}
+
+.bullet-list li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 14.5px;
+  color: var(--ink);
+  margin-bottom: 8px;
+  word-break: keep-all;
+}
+
+.bullet-list li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.week-card:first-child .week-date { background: var(--red); }

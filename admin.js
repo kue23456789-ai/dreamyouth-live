@@ -9,10 +9,12 @@ const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 const STORAGE_KEY = "dy_admin_conn_v1";
 
-let conn = null;      // { owner, repo, token }
-let sha = null;        // 현재 data.json의 git sha (덮어쓰기 충돌 방지용)
-let data = null;       // 편집 중인 데이터 객체
-let dirty = false;     // 저장 안 된 변경사항이 있는지
+let conn = null;         // { owner, repo, token }
+let shaMap = {};          // 파일 경로별 git sha (덮어쓰기 충돌 방지용)
+let data = null;          // 학생용 메인 데이터 (data.json)
+let teacherData = null;   // 교육목자 자료 (teacher-data.json)
+let dirty = false;        // 저장 안 된 변경사항이 있는지
+let pendingImages = {};   // { weekIndex: { dataUrl, base64, ext } } 저장 전 임시 보관
 
 /* ---------- base64 <-> UTF-8 (한글 안전) ---------- */
 
@@ -50,23 +52,46 @@ async function ghRequest(method, path, body) {
   return res.json();
 }
 
-async function fetchDataJson() {
+async function fetchJsonFile(path) {
   const result = await ghRequest(
     "GET",
-    `/repos/${conn.owner}/${conn.repo}/contents/data.json`
+    `/repos/${conn.owner}/${conn.repo}/contents/${path}`
   );
-  sha = result.sha;
+  shaMap[path] = result.sha;
   return JSON.parse(fromBase64(result.content));
 }
 
-async function pushDataJson(newData, message) {
-  const content = toBase64(JSON.stringify(newData, null, 2));
+async function pushJsonFile(path, obj, message) {
+  const content = toBase64(JSON.stringify(obj, null, 2));
   const result = await ghRequest(
     "PUT",
-    `/repos/${conn.owner}/${conn.repo}/contents/data.json`,
-    { message, content, sha }
+    `/repos/${conn.owner}/${conn.repo}/contents/${path}`,
+    { message, content, sha: shaMap[path] }
   );
-  sha = result.content.sha; // 다음 저장을 위해 최신 sha 갱신
+  shaMap[path] = result.content.sha;
+}
+
+async function getShaIfExists(path) {
+  try {
+    const result = await ghRequest(
+      "GET",
+      `/repos/${conn.owner}/${conn.repo}/contents/${path}`
+    );
+    return result.sha;
+  } catch {
+    return null; // 파일이 없으면(404) null -> 새로 생성
+  }
+}
+
+async function pushBinaryFile(path, base64Content, message) {
+  const existingSha = await getShaIfExists(path);
+  const body = { message, content: base64Content };
+  if (existingSha) body.sha = existingSha;
+  return ghRequest(
+    "PUT",
+    `/repos/${conn.owner}/${conn.repo}/contents/${path}`,
+    body
+  );
 }
 
 /* ---------- 연결 화면 ---------- */
@@ -107,7 +132,14 @@ $("#btnConnect").addEventListener("click", async () => {
   conn = { owner, repo, token };
 
   try {
-    data = await fetchDataJson();
+    data = await fetchJsonFile("data.json");
+
+    try {
+      teacherData = await fetchJsonFile("teacher-data.json");
+    } catch {
+      // 아직 저장소에 teacher-data.json이 없으면 기본값으로 시작
+      teacherData = { weeks: [] };
+    }
 
     if (remember) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(conn));
@@ -164,6 +196,7 @@ function renderAllPanels() {
   renderSongs();
   renderNotices();
   renderServants();
+  renderTeacherWeeks();
 }
 
 /* ----- 예배 정보 ----- */
@@ -216,7 +249,7 @@ async function quickSave(message) {
   status.textContent = "저장 중…";
   status.className = "save-status";
   try {
-    await pushDataJson(data, message);
+    await pushJsonFile("data.json", data, message);
     dirty = false;
     status.textContent = "저장 완료! 30초 안에 학생들 화면에 반영돼요.";
     status.className = "save-status ok";
@@ -457,6 +490,156 @@ function collectServants() {
     }
   });
 }
+
+/* ---------- 교육목자 자료 (선생님 전용 페이지) ---------- */
+
+function renderTeacherWeeks() {
+  const wrap = $("#teacherWeeks");
+  wrap.innerHTML = "";
+
+  teacherData.weeks.forEach((week, i) => {
+    const block = document.createElement("div");
+    block.className = "week-block";
+    const previewSrc = pendingImages[i]
+      ? pendingImages[i].dataUrl
+      : week.sheetImage || "";
+
+    block.innerHTML = `
+      <div class="repeat-row-head">
+        <span class="repeat-row-title">${week.dateLabel || "새 주차"}</span>
+        <button class="admin-btn admin-btn-del" data-delteacherweek="${i}">주차 삭제</button>
+      </div>
+
+      <div class="field-grid-2">
+        <div>
+          <label class="admin-label">날짜 라벨</label>
+          <input class="admin-input" data-tfield="dateLabel" data-tidx="${i}" value="${escAttr(week.dateLabel)}" placeholder="예: 2026.8.2" />
+        </div>
+        <div>
+          <label class="admin-label">결단 찬양 제목</label>
+          <input class="admin-input" data-tfield="songTitle" data-tidx="${i}" value="${escAttr(week.songTitle)}" />
+        </div>
+      </div>
+
+      <label class="admin-label">결단 찬양 악보 이미지</label>
+      ${previewSrc ? `<div class="sheet-frame" style="max-width:220px;"><img src="${previewSrc}" style="width:100%;display:block;" /></div>` : ""}
+      <input type="file" accept="image/*" class="admin-input" data-timgidx="${i}" style="padding:8px;" />
+
+      <label class="admin-label">설교 제목 (핵심 메시지 요약 위 제목)</label>
+      <input class="admin-input" data-tfield="messageTitle" data-tidx="${i}" value="${escAttr(week.messageTitle)}" />
+
+      <label class="admin-label">설교 핵심 메시지 요약</label>
+      <textarea class="admin-textarea" rows="2" data-tfield="messageSummary" data-tidx="${i}">${escHtml(week.messageSummary)}</textarea>
+
+      <label class="admin-label">기도제목 (한 줄에 하나씩)</label>
+      <textarea class="admin-textarea" rows="3" data-tfield="prayerPoints" data-tidx="${i}">${escHtml((week.prayerPoints || []).join("\n"))}</textarea>
+
+      <label class="admin-label">공지사항 (한 줄에 하나씩)</label>
+      <textarea class="admin-textarea" rows="4" data-tfield="notices" data-tidx="${i}">${escHtml((week.notices || []).join("\n"))}</textarea>
+    `;
+    wrap.appendChild(block);
+  });
+}
+
+function collectTeacherWeeks() {
+  $$('[data-tidx]').forEach((el) => {
+    const idx = Number(el.dataset.tidx);
+    const field = el.dataset.tfield;
+    if (!teacherData.weeks[idx]) return;
+    if (field === "prayerPoints" || field === "notices") {
+      teacherData.weeks[idx][field] = el.value
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    } else {
+      teacherData.weeks[idx][field] = el.value.trim();
+    }
+  });
+}
+
+// 새 주차 추가
+$("#btnAddTeacherWeek").addEventListener("click", () => {
+  collectTeacherWeeks();
+  const today = new Date();
+  const id = today.toISOString().slice(0, 10);
+  teacherData.weeks.unshift({
+    id,
+    dateLabel: `${today.getFullYear()}.${today.getMonth() + 1}.${today.getDate()}`,
+    songTitle: "",
+    sheetImage: "",
+    messageTitle: "",
+    messageSummary: "",
+    prayerPoints: [],
+    notices: [],
+  });
+  pendingImages = {}; // 인덱스가 밀리므로 임시 이미지는 초기화
+  renderTeacherWeeks();
+  markDirty();
+});
+
+// 주차 삭제 / 이미지 선택 (이벤트 위임)
+document.addEventListener("click", (e) => {
+  const delBtn = e.target.closest("[data-delteacherweek]");
+  if (delBtn) {
+    collectTeacherWeeks();
+    const idx = Number(delBtn.dataset.delteacherweek);
+    teacherData.weeks.splice(idx, 1);
+    pendingImages = {};
+    renderTeacherWeeks();
+    markDirty();
+  }
+});
+
+document.addEventListener("change", (e) => {
+  const fileInput = e.target.closest("[data-timgidx]");
+  if (!fileInput || !fileInput.files[0]) return;
+
+  const idx = Number(fileInput.dataset.timgidx);
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result; // data:image/jpeg;base64,XXXX
+    const base64 = dataUrl.split(",")[1];
+    const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    pendingImages[idx] = { dataUrl, base64, ext };
+    markDirty();
+    renderTeacherWeeks();
+  };
+  reader.readAsDataURL(file);
+});
+
+// 교육목자 자료 저장 (이미지 업로드 -> teacher-data.json 저장 순서로 진행)
+$("#btnSaveTeacher").addEventListener("click", async () => {
+  collectTeacherWeeks();
+  const btn = $("#btnSaveTeacher");
+  const msgEl = $("#teacherSaveMsg");
+  btn.disabled = true;
+  msgEl.textContent = "이미지 업로드 중…";
+
+  try {
+    for (const idxStr of Object.keys(pendingImages)) {
+      const idx = Number(idxStr);
+      const week = teacherData.weeks[idx];
+      if (!week) continue;
+      const img = pendingImages[idx];
+      const path = `sheets/${week.id || idx}.${img.ext}`;
+      await pushBinaryFile(path, img.base64, `Update sheet image for ${week.dateLabel}`);
+      week.sheetImage = path;
+    }
+    pendingImages = {};
+
+    msgEl.textContent = "자료 저장 중…";
+    await pushJsonFile("teacher-data.json", teacherData, "Update teacher data via admin page");
+
+    dirty = false;
+    msgEl.textContent = "저장 완료! 선생님 페이지에 바로 반영돼요.";
+    renderTeacherWeeks();
+  } catch (err) {
+    msgEl.textContent = "저장 실패: " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 /* ---------- 전체 저장 ---------- */
 
