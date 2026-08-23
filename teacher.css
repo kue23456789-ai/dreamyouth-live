@@ -95,3 +95,21 @@
 }
 
 .week-card:first-child .week-date { background: var(--red); }
+
+/* ==========================================================
+   반응형 — 태블릿 / 데스크톱
+   ========================================================== */
+
+@media (min-width: 700px) {
+  #weekList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .week-card { margin-bottom: 0; }
+}
+
+@media (min-width: 1280px) {
+  #weekList { grid-template-columns: repeat(3, 1fr); }
+}

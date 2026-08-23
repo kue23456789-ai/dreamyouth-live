@@ -3,8 +3,10 @@
    style.css의 변수(--blue, --red, --ink 등)를 그대로 사용합니다.
    ========================================================== */
 
+:root { --admin-max: 640px; }
+
 .admin-body {
-  max-width: 640px;
+  max-width: var(--admin-max);
   padding-bottom: 100px; /* 하단 저장바에 가리지 않게 */
 }
 
@@ -311,7 +313,7 @@ select.admin-input {
 .save-bar {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  max-width: 640px;
+  max-width: var(--admin-max);
   margin: 0 auto;
   background: #fff;
   border-top: 1.5px solid #e3e7f8;
@@ -333,3 +335,46 @@ select.admin-input {
 .save-status.err { color: var(--red); }
 
 .save-bar .admin-btn-primary { width: auto; flex-shrink: 0; }
+
+/* ==========================================================
+   반응형 — 태블릿 / 데스크톱
+   (teacher.html도 body.admin-body를 공유하므로 함께 적용됩니다)
+   ========================================================== */
+
+@media (min-width: 700px) {
+  :root { --admin-max: 760px; }
+
+  .admin-main { padding: 28px; }
+
+  .live-btn-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .live-btn { flex: 1 1 calc(50% - 4px); }
+
+  #orderRows, #songRows, #noticeRows,
+  #servantWeeks, #teacherWeeks {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+  #orderRows .repeat-row, #songRows .repeat-row, #noticeRows .repeat-row,
+  #servantWeeks .week-block, #teacherWeeks .week-block {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root { --admin-max: 960px; }
+
+  .admin-main { padding: 36px; }
+
+  /* 섬김명단·교육목자 카드는 내용이 길어서 2단을 유지하고,
+     순서/찬양/공지처럼 짧은 항목만 3단으로 넓힙니다 */
+  #orderRows, #songRows, #noticeRows {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-btn:hover { opacity: 0.9; }
+}

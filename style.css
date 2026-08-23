@@ -18,6 +18,7 @@
 
   --radius: 20px;
   --pad: 20px;
+  --content-max: 560px;    /* 화면 크기별로 아래 미디어쿼리에서 넓힙니다 */
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,7 +32,7 @@ body {
   font-size: 17px;              /* 모바일 기본 크게 */
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  max-width: 560px;             /* 폰 화면 기준, 데스크톱에선 가운데 */
+  max-width: var(--content-max);
   margin: 0 auto;
 }
 
@@ -467,4 +468,49 @@ body {
   html { scroll-behavior: auto; }
   .dot { animation: none; }
   .order-item { transition: none; }
+}
+
+/* ==========================================================
+   반응형 — 태블릿 / 데스크톱
+   ========================================================== */
+
+@media (min-width: 700px) {
+  :root {
+    --content-max: 720px;
+    --pad: 28px;
+  }
+
+  body { font-size: 17.5px; }
+
+  .hero { border-radius: 0 0 32px 32px; }
+
+  .notice-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .servant-card { padding: 6px 24px; }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --content-max: 900px;
+    --pad: 36px;
+  }
+
+  body { font-size: 18px; }
+
+  .section { padding-top: 44px; }
+
+  .notice-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .order-item:hover {
+    border-color: #c3cbef;
+    box-shadow: 0 6px 18px rgba(16, 20, 46, 0.08);
+  }
+
+  .servant-tab:hover { border-color: var(--ink); }
 }
