@@ -1,85 +1,91 @@
-{
-  "meta": {
-    "ministry": "DREAM YOUTH",
-    "ministryKo": "드림유스",
-    "updated": "2026-07-26"
-  },
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1226C9" />
+  <title>DREAM YOUTH · 오늘의 예배</title>
+  <meta name="description" content="드림유스 주일예배 실시간 안내 — 예배 순서, 찬양 리스트, 공지사항" />
 
-  "worship": {
-    "title": "부어주신 은혜, 흘려보내는 우리",
-    "message": "받은 은혜는 붙잡을 때가 아니라 흘려보낼 때 완성됩니다.",
-    "verse": "이사야 56:7",
-    "preacher": "권규호 전도사"
-  },
+  <!-- Fonts: Black Han Sans(포스터용) + Pretendard(본문) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 
-  "live": {
-    "currentOrder": 1,
-    "note": "currentOrder: 현재 진행 중인 순서의 번호(0부터 시작). 예배 전에는 -1로 두세요."
-  },
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
-  "order": [
-    { "time": "11:00", "name": "찬양",       "detail": "드림유스 찬양팀과 함께",         "type": "praise" },
-    { "time": "11:25", "name": "대표기도",   "detail": "이번 주 섬김이 명단 참고",       "type": "prayer" },
-    { "time": "11:30", "name": "말씀",       "detail": "부어주신 은혜, 흘려보내는 우리", "type": "word" },
-    { "time": "12:00", "name": "결단 찬양",  "detail": "말씀에 응답하는 시간",           "type": "final" },
-    { "time": "12:10", "name": "봉헌 · 광고", "detail": "공지사항을 함께 확인해요",       "type": "notice" },
-    { "time": "12:20", "name": "축도",       "detail": "축복하며 파송",                  "type": "end" }
-  ],
+  <!-- ① 헤더 / 히어로 -->
+  <header class="hero">
+    <div class="hero-top">
+      <span class="brand">DREAM YOUTH</span>
+      <span class="live-badge" id="liveBadge"><span class="dot"></span>LIVE</span>
+    </div>
 
-  "songs": [
-    { "no": 1, "title": "예수 이름 높이세",     "key": "G", "line": "예수 이름 높이세 주를 찬양하며" },
-    { "no": 2, "title": "은혜 아니면",          "key": "A", "line": "나 서 있는 이 자리 은혜 아니면" },
-    { "no": 3, "title": "성령이 오셨네",        "key": "E", "line": "성령이 오셨네 우리 안에 오셨네" },
-    { "no": 4, "title": "주님 다시 오실 때까지", "key": "D", "line": "주님 다시 오실 때까지 나는 이 길을 가리라", "final": true }
-  ],
+    <p class="hero-date" id="todayDate">—</p>
+    <h1 class="hero-title" id="worshipTitle">오늘의 예배</h1>
 
-  "notices": [
-    {
-      "badge": "수련회",
-      "title": "MAKE ROOM 2026",
-      "desc": "7/30(목) ~ 8/1(토) · 여름 수련회 출발이 코앞! 준비물 안내는 단톡방 공지를 확인하세요.",
-      "highlight": true
-    },
-    {
-      "badge": "예배 후",
-      "title": "반별 모임",
-      "desc": "예배 끝나고 각 반 교실로 이동! 오늘은 수련회 조 편성을 발표합니다.",
-      "highlight": false
-    },
-    {
-      "badge": "모집",
-      "title": "성경골든벨 참가 신청",
-      "desc": "8월 셋째 주 성경골든벨! 이번 주까지 담당 선생님께 신청해 주세요.",
-      "highlight": false
-    },
-    {
-      "badge": "세미나",
-      "title": "큐티세미나 · God in My Feed",
-      "desc": "매일 말씀 묵상, 어떻게 시작할까? 다음 주부터 5주간 진행됩니다.",
-      "highlight": false
-    }
-  ],
+    <div class="hero-message">
+      <p class="message-label">오늘의 한 문장</p>
+      <p class="message-text" id="worshipMessage">…</p>
+      <p class="message-meta"><span id="worshipVerse"></span> · <span id="worshipPreacher"></span></p>
+    </div>
+  </header>
 
-  "servants": [
-    {
-      "label": "7월 26일 (오늘)",
-      "roles": [
-        { "role": "대표기도", "name": "김OO (고2)" },
-        { "role": "봉헌",     "name": "박OO (중3)" },
-        { "role": "찬양 인도", "name": "이OO 선생님" },
-        { "role": "미디어",   "name": "최OO (고1)" },
-        { "role": "안내",     "name": "새가족팀" }
-      ]
-    },
-    {
-      "label": "8월 2일 (다음 주)",
-      "roles": [
-        { "role": "대표기도", "name": "정OO (고3)" },
-        { "role": "봉헌",     "name": "한OO (중2)" },
-        { "role": "찬양 인도", "name": "드림유스 찬양팀" },
-        { "role": "미디어",   "name": "윤OO (고2)" },
-        { "role": "안내",     "name": "행정팀" }
-      ]
-    }
-  ]
-}
+  <main>
+    <!-- ② 예배 콘티 -->
+    <section class="section" id="orderSection" aria-labelledby="orderHeading">
+      <div class="section-head">
+        <h2 id="orderHeading">예배 순서</h2>
+        <p class="section-sub">지금 어디까지 왔는지 여기서 확인하세요</p>
+      </div>
+      <ol class="order-list" id="orderList"></ol>
+    </section>
+
+    <!-- ③ Song List (포스터) -->
+    <section class="section" aria-labelledby="songHeading">
+      <div class="poster" id="songPoster">
+        <div class="poster-head">
+          <span class="poster-eyebrow">TODAY'S SET</span>
+          <h2 id="songHeading" class="poster-title">SONG<br />LIST</h2>
+        </div>
+        <ol class="track-list" id="songList"></ol>
+        <p class="poster-foot">함께 크게 부르자 · DREAM YOUTH PRAISE</p>
+      </div>
+    </section>
+
+    <!-- ④ 공지사항 -->
+    <section class="section" aria-labelledby="noticeHeading">
+      <div class="section-head">
+        <h2 id="noticeHeading">공지사항</h2>
+        <p class="section-sub">예배 후 꼭 확인해요</p>
+      </div>
+      <div class="notice-grid" id="noticeGrid"></div>
+    </section>
+
+    <!-- ⑤ 섬김 명단 -->
+    <section class="section" aria-labelledby="servantHeading">
+      <div class="section-head">
+        <h2 id="servantHeading">함께 섬기는 사람들</h2>
+        <p class="section-sub">날짜를 눌러 다음 주 명단도 볼 수 있어요</p>
+      </div>
+      <div class="servant-tabs" id="servantTabs" role="tablist"></div>
+      <div class="servant-card">
+        <table class="servant-table">
+          <tbody id="servantBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>DREAM YOUTH · 드림유스</p>
+    <p class="foot-sub" id="updatedAt"></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

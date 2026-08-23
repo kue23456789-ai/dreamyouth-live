@@ -1,113 +1,89 @@
-/* ==========================================================
-   DREAM YOUTH TEACHER — teacher.js
-   별도의 로그인 없이, 이름만 입력하면 바로 자료를 볼 수 있습니다.
-   ========================================================== */
-
-const $ = (sel) => document.querySelector(sel);
-
-const NAME_KEY = "dy_teacher_name";
-
-async function loadTeacherData() {
-  const res = await fetch(`teacher-data.json?v=${Date.now()}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("데이터를 불러오지 못했어요.");
-  return res.json();
-}
-
-function renderWeeks(data) {
-  const wrap = $("#weekList");
-  wrap.innerHTML = "";
-
-  data.weeks.forEach((week) => {
-    const card = document.createElement("article");
-    card.className = "week-card";
-    card.innerHTML = `
-      <span class="week-date">${week.dateLabel}</span>
-      <h2 class="week-song-title">${week.songTitle}</h2>
-
-      ${
-        week.sheetImage
-          ? `<div class="sheet-frame"><img src="${week.sheetImage}" alt="${week.songTitle} 악보" loading="lazy" /></div>`
-          : ""
-      }
-
-      <p class="week-block-title">설교 핵심 요약</p>
-      <div class="message-box">
-        <p class="msg-title">${week.messageTitle}</p>
-        <p class="msg-summary">${week.messageSummary}</p>
-      </div>
-
-      <p class="week-block-title">기도제목</p>
-      <ul class="bullet-list">
-        ${week.prayerPoints.map((p) => `<li>${p}</li>`).join("")}
-      </ul>
-
-      <p class="week-block-title">공지사항</p>
-      <ul class="bullet-list">
-        ${week.notices.map((n) => `<li>${n}</li>`).join("")}
-      </ul>
-    `;
-    wrap.appendChild(card);
-  });
-}
-
-async function init() {
-  let data;
-  try {
-    data = await loadTeacherData();
-  } catch (err) {
-    $("#gateView").innerHTML = `<p class="admin-error">${err.message}</p>`;
-    return;
-  }
-
-  const savedName = localStorage.getItem(NAME_KEY);
-  if (savedName) {
-    showContent(data, savedName);
-    return;
-  }
-
-  $("#btnEnter").addEventListener("click", () => enter(data));
-  $("#nameInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enter(data);
-  });
-}
-
-function enter(data) {
-  const name = $("#nameInput").value.trim();
-  if (!name) {
-    $("#nameInput").focus();
-    return;
-  }
-  localStorage.setItem(NAME_KEY, name);
-  showContent(data, name);
-}
-
-function showContent(data, name) {
-  $("#gateView").classList.add("hidden");
-  $("#contentView").classList.remove("hidden");
-  $("#welcomeMsg").textContent = `${name} 선생님, 환영합니다 🙏`;
-  renderWeeks(data);
-}
-
-init();
-
-/* ---------- 숨겨진 관리자 입구: 상단 제목 3번 클릭 ---------- */
-
-(function setupHiddenAdminEntry() {
-  const target = document.querySelector(".admin-header .brand");
-  if (!target) return;
-
-  let clickCount = 0;
-  let resetTimer = null;
-
-  target.style.cursor = "pointer";
-  target.addEventListener("click", () => {
-    clickCount += 1;
-    clearTimeout(resetTimer);
-    resetTimer = setTimeout(() => (clickCount = 0), 800);
-
-    if (clickCount >= 3) {
-      clickCount = 0;
-      window.location.href = "admin.html";
+{
+  "weeks": [
+    {
+      "id": "2026-07-26",
+      "dateLabel": "2026.7.26",
+      "songTitle": "오직 주만이 (나의 영혼이)",
+      "sheetImage": "2026-07-26.jpg",
+      "messageTitle": "꺼드럭 ㄴㄴ (겔 31:1-18) 우리말성경",
+      "messageSummary": "하나님의 은혜로 살아놓고, 내 것인 것처럼 꺼드럭대는 교만을 버리고 다시 겸손의 자리로 돌아가자.",
+      "prayerPoints": [
+        "하나님 앞에 온전히 엎드리는 예배가 되게 하소서.",
+        "서로 판단하지 않고 사랑으로 하나 되는 공동체 되게 하소서.",
+        "겸손히 섬기며 하나님 마음으로 아이들을 품는 교육목자가 되게 하소서."
+      ],
+      "notices": [
+        "예배 후 각 목장 모임 OO",
+        "드림유스 일정 : 7/30(목) 여름수련회 스탭 모임시간 오전 8시!! · 7/30-8/1(목-토) 여름수련회",
+        "드림유스 일정 : 8/22(토) 논현지방 성경골든벨 · 8/29(토) 교육목자 페스티벌",
+        "8월 큐티책 신청 : 8월달 큐티책 신청해주세요. 큐티책 값 4,000원입니다.",
+        "성경골든벨 : 일정 8월 22일(토) / 신청기한 7월 26일(주일) / 출제범위 구약-여호수아,에스라,느헤미야, 신약-마태복음,에베소서,빌립보서",
+        "교육목자 페스티벌 : 일정 8월 29일(토) / 시간 낮 12시 / 장소 아지트"
+      ]
+    },
+    {
+      "id": "2026-07-19",
+      "dateLabel": "2026.7.19",
+      "songTitle": "주 앞에 엎드려",
+      "sheetImage": "2026-07-19.jpg",
+      "messageTitle": "현실에서 아름다운 줄 알았던 내가 이세계에서는...(겔 27:1-25) 우리말성경",
+      "messageSummary": "우리 안의 부자연스러운 아름다움을 내려놓고, 하나님이 만드신 자연스러운 아름다움을 회복하라.",
+      "prayerPoints": [
+        "하나님께 주권을 인정하는 예배가 되게 하여 주옵소서.",
+        "인생의 핸들도 베스트 드라이버 되신 예수님께 맡기게 하옵소서.",
+        "교육목자들의 삶이 먼저 주권을 인정하는 삶들 되게 하옵소서."
+      ],
+      "notices": [
+        "예배 후 각 목장 모임 OO",
+        "드림유스 일정 : 7/25(토) 여름수련회 스탭 모임 · 7/30-8/1(목-토) 여름수련회",
+        "드림유스 일정 : 8/22(토) 논현지방 성경골든벨 · 8/29(토) 교육목자 페스티벌",
+        "여름수련회 광고 : 주제는 Make Room입니다. 장소는 겨울과 동일하게 엘림하우스입니다. 강사 목사님은 박상수 목사님이십니다.",
+        "성경골든벨 : 일정 8월 22일(토) / 신청기한 7월 26일(주일) / 출제범위 구약-여호수아,에스라,느헤미야, 신약-마태복음,에베소서,빌립보서",
+        "교육목자 페스티벌 : 일정 8월 29일(토) / 시간 낮 12시 / 장소 아지트"
+      ]
+    },
+    {
+      "id": "2026-07-12",
+      "dateLabel": "2026.7.12",
+      "songTitle": "물 가운데 지날 때에도",
+      "sheetImage": "2026-07-12.jpg",
+      "messageTitle": "핸들이 고장난 8톤 트럭 (시편 109편) 우리말성경",
+      "messageSummary": "내 염려와 조급함을 비우고 하나님이 일하실 기도의 방을 확보할 때, 폭우 속에서도 무너지지 않는 찬양이 시작된다.",
+      "prayerPoints": [
+        "하나님께 주권을 인정하는 예배가 되게 하여 주옵소서.",
+        "인생의 핸들도 베스트 드라이버 되신 예수님께 맡기게 하옵소서.",
+        "교육목자들의 삶이 먼저 주권을 인정하는 삶들 되게 하옵소서."
+      ],
+      "notices": [
+        "예배 후 각 목장 모임 OO",
+        "드림유스 일정 : 7/14(화) 남동구 스쿨처치 연합예배 · 7/30-8/1(목-토) 여름수련회",
+        "드림유스 일정 : 7/18,25(토) 여름수련회 스탭 모임 · 8/22(토) 논현지방 성경골든벨",
+        "큐티세미나 : 진행중에 있습니다. 원하실 때 함께 참여해주세요.",
+        "여름수련회 광고 : 주제는 Make Room입니다. 장소는 겨울과 동일하게 엘림하우스입니다. 강사 목사님은 박상수 목사님이십니다.",
+        "남동구 스쿨처치 연합예배 : 인천 남동구 스쿨처치 연합예배가 있습니다. 화요일 오후 6시 아지트에서 진행합니다. 강사로 이동선 목사(피아워십)께서 오십니다.",
+        "성경골든벨 : 일정 8월 22일(토) / 신청기한 7월 26일(주일) / 출제범위 구약-여호수아,에스라,느헤미야, 신약-마태복음,에베소서,빌립보서"
+      ]
+    },
+    {
+      "id": "2026-07-05",
+      "dateLabel": "2026.7.5",
+      "songTitle": "내 마음 속 전부를",
+      "sheetImage": "",
+      "messageTitle": "매운 맛 기도 (시편 109편) 우리말성경",
+      "messageSummary": "하나님은 포장된 '정답 기도'가 아닌, 상처와 분노의 민낯까지도 있는 그대로 쏟아내는 '날것의 정직한 기도'를 통해 우리와 인격적으로 만나기를 원하신다.",
+      "prayerPoints": [
+        "오늘 솔직한 마음으로 나아가는, 상한 심령을 드리는 예배가 되게 하옵소서.",
+        "하나님 앞에 민낯까지도 쏟아내는 정직한 공동체가 되게 하옵소서.",
+        "상처와 분노를 하나님 앞에 있는 그대로 내어드리는 교육목자들 되게 하옵소서."
+      ],
+      "notices": [
+        "예배 후 각 목장 모임 OO",
+        "드림유스 일정 : 6/14-7/12 큐티세미나 1기 · 7/30-8/1(목-토) 여름수련회",
+        "드림유스 일정 : 7/14(화) 남동구 스쿨처치 연합예배 · 7/18,25(토) 여름수련회 스탭 모임",
+        "큐티세미나 : 진행중에 있습니다. 원하실 때 함께 참여해주세요.",
+        "여름수련회 광고 : 주제는 Make Room입니다. 장소는 겨울과 동일하게 엘림하우스입니다. 강사 목사님은 박상수 목사님이십니다.",
+        "남동구 스쿨처치 연합예배 : 인천 남동구 스쿨처치 연합예배가 있습니다. 화요일 오후 6시 아지트에서 진행합니다. 강사로 이동선 목사(피아워십)께서 오십니다."
+      ]
     }
-  });
-})();
+  ]
+}

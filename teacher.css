@@ -1,470 +1,97 @@
 /* ==========================================================
-   DREAM YOUTH LIVE — 청소년부 예배 실시간 안내
-   Palette: Electric Blue / White / Signal Red
+   DREAM YOUTH TEACHER — teacher.css
+   admin.css / style.css의 변수를 그대로 사용합니다.
    ========================================================== */
 
-:root {
-  --blue: #1226c9;        /* 메인 블루 */
-  --blue-deep: #0a1030;   /* 포스터 네이비 */
-  --blue-soft: #e8ecff;   /* 옅은 블루 배경 */
-  --red: #ff2e3c;         /* 포인트 레드 */
-  --ink: #10142e;         /* 본문 텍스트 */
-  --gray: #6b7194;        /* 보조 텍스트 */
-  --bg: #f3f5fd;          /* 페이지 배경 */
-  --card: #ffffff;
-
-  --display: "Black Han Sans", sans-serif;
-  --body: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
-
-  --radius: 20px;
-  --pad: 20px;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: var(--body);
-  background: var(--bg);
-  color: var(--ink);
-  font-size: 17px;              /* 모바일 기본 크게 */
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  max-width: 560px;             /* 폰 화면 기준, 데스크톱에선 가운데 */
-  margin: 0 auto;
-}
-
-/* ---------- ① 히어로 ---------- */
-
-.hero {
-  background:
-    radial-gradient(120% 90% at 100% 0%, #3050ff 0%, transparent 55%),
-    var(--blue);
-  color: #fff;
-  padding: calc(env(safe-area-inset-top, 0px) + 24px) var(--pad) 28px;
-  border-radius: 0 0 28px 28px;
-}
-
-.hero-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-}
-
-.brand {
-  font-family: var(--display);
-  font-size: 15px;
-  letter-spacing: 0.14em;
-  opacity: 0.9;
-}
-
-.live-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--red);
-  color: #fff;
-  font-weight: 800;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  padding: 6px 12px;
-  border-radius: 999px;
-}
-.live-badge.off { background: rgba(255, 255, 255, 0.18); }
-
-.dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
+.week-card {
   background: #fff;
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.35; transform: scale(0.75); }
-}
-
-.hero-date {
-  font-size: 14px;
-  font-weight: 600;
-  opacity: 0.85;
-  margin-bottom: 6px;
-}
-
-.hero-title {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(30px, 8.5vw, 40px);
-  line-height: 1.18;
-  word-break: keep-all;
-  margin-bottom: 20px;
-}
-
-.hero-message {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  backdrop-filter: blur(4px);
-}
-
-.message-label {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #ffd3d6;
-  margin-bottom: 6px;
-}
-
-.message-text {
-  font-size: 18px;
-  font-weight: 700;
-  word-break: keep-all;
-  margin-bottom: 8px;
-}
-
-.message-meta { font-size: 13px; opacity: 0.8; }
-
-/* ---------- 공통 섹션 ---------- */
-
-.section { padding: 34px var(--pad) 0; }
-
-.section-head { margin-bottom: 16px; }
-
-.section-head h2 {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: 24px;
-  color: var(--ink);
-}
-
-.section-sub { font-size: 14px; color: var(--gray); margin-top: 2px; }
-
-/* ---------- ② 예배 콘티 ---------- */
-
-.order-list {
-  list-style: none;
-  position: relative;
-  padding-left: 26px;
-}
-
-/* 세로 레일 */
-.order-list::before {
-  content: "";
-  position: absolute;
-  left: 8px; top: 10px; bottom: 10px;
-  width: 3px;
-  border-radius: 2px;
-  background: #d7ddf5;
-}
-
-.order-item {
-  position: relative;
-  background: var(--card);
   border: 1.5px solid #e3e7f8;
-  border-radius: 16px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 18px;
 }
 
-/* 레일 위의 점 */
-.order-item::before {
-  content: "";
-  position: absolute;
-  left: -22.5px;
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: #c3cbef;
-  border: 2px solid var(--bg);
-}
-
-.order-time {
+.week-date {
+  display: inline-block;
   font-size: 13px;
   font-weight: 800;
-  color: var(--blue);
-  min-width: 44px;
-}
-
-.order-name { font-size: 18px; font-weight: 800; }
-.order-detail { font-size: 13.5px; color: var(--gray); margin-top: 1px; word-break: keep-all; }
-
-.now-chip {
-  margin-left: auto;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--red);
   color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 5px 10px;
-  border-radius: 999px;
-}
-
-/* 상태별 스타일 */
-.order-item.done { opacity: 0.5; }
-.order-item.done .order-name { text-decoration: line-through; text-decoration-thickness: 2px; }
-
-.order-item.now {
-  border-color: var(--red);
-  box-shadow: 0 8px 24px rgba(255, 46, 60, 0.18);
-  transform: scale(1.02);
-}
-.order-item.now::before { background: var(--red); }
-.order-item.now .order-time { color: var(--red); }
-
-/* ---------- ③ Song List 포스터 ---------- */
-
-.poster {
-  background:
-    radial-gradient(90% 60% at 0% 100%, #1a2fe0 0%, transparent 50%),
-    var(--blue-deep);
-  color: #fff;
-  border-radius: 24px;
-  padding: 26px 22px 22px;
-  overflow: hidden;
-  position: relative;
-}
-
-.poster::after {                 /* 포스터 질감: 좌상단 큰 워터마크 */
-  content: "PRAISE";
-  position: absolute;
-  top: -14px; right: -8px;
-  font-family: var(--display);
-  font-size: 74px;
-  color: rgba(255, 255, 255, 0.05);
-  letter-spacing: 0.02em;
-  pointer-events: none;
-}
-
-.poster-eyebrow {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  color: #8fa0ff;
-  margin-bottom: 8px;
-}
-
-.poster-title {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(52px, 15vw, 72px);
-  line-height: 0.95;
-  letter-spacing: 0.01em;
-  margin-bottom: 22px;
-}
-
-.track-list { list-style: none; }
-
-.track {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  padding: 14px 2px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.track-no {
-  font-family: var(--display);
-  font-size: 20px;
-  color: #5f74ff;
-  min-width: 30px;
-}
-
-.track-title {
-  font-size: 20px;
-  font-weight: 800;
-  word-break: keep-all;
-}
-
-.track-line {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.55);
-  margin-top: 3px;
-}
-
-.track-key {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: #8fa0ff;
-  border: 1px solid rgba(143, 160, 255, 0.4);
-  border-radius: 8px;
-  padding: 2px 8px;
-}
-
-/* 결단 찬양 강조 */
-.track.final {
-  background: var(--red);
-  border-top: none;
-  border-radius: 14px;
-  padding: 16px 14px;
-  margin-top: 10px;
-  transform: rotate(-1deg);
-}
-.track.final .track-no,
-.track.final .track-key { color: #fff; border-color: rgba(255, 255, 255, 0.5); }
-.track.final .track-line { color: rgba(255, 255, 255, 0.85); }
-
-.final-tag {
-  display: inline-block;
-  background: #fff;
-  color: var(--red);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
-  border-radius: 6px;
-  margin-bottom: 4px;
-}
-
-.poster-foot {
-  margin-top: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: rgba(255, 255, 255, 0.4);
-  text-align: center;
-}
-
-/* ---------- ④ 공지사항 ---------- */
-
-.notice-grid { display: grid; gap: 12px; }
-
-.notice-card {
-  background: var(--card);
-  border: 1.5px solid #e3e7f8;
-  border-radius: var(--radius);
-  padding: 18px;
-}
-
-.notice-card.highlight {
   background: var(--blue);
-  border-color: var(--blue);
-  color: #fff;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
 }
 
-.notice-badge {
-  display: inline-block;
+.week-song-title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.sheet-frame {
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg);
+  margin-bottom: 16px;
+  border: 1px solid #e3e7f8;
+}
+
+.sheet-frame img {
+  width: 100%;
+  display: block;
+}
+
+.week-block-title {
   font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--gray);
+  margin: 16px 0 8px;
+  text-transform: uppercase;
+}
+
+.message-box {
+  background: var(--blue-soft);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.message-box .msg-title {
+  font-size: 15.5px;
   font-weight: 800;
   color: var(--blue);
-  background: var(--blue-soft);
-  padding: 4px 10px;
-  border-radius: 999px;
-  margin-bottom: 8px;
-}
-
-.notice-card.highlight .notice-badge { background: var(--red); color: #fff; }
-
-.notice-title {
-  font-size: 19px;
-  font-weight: 800;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   word-break: keep-all;
 }
 
-.notice-desc {
+.message-box .msg-summary {
   font-size: 14.5px;
-  color: var(--gray);
+  color: var(--ink);
   word-break: keep-all;
 }
 
-.notice-card.highlight .notice-desc { color: rgba(255, 255, 255, 0.85); }
-
-/* ---------- ⑤ 섬김 명단 ---------- */
-
-.servant-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+.bullet-list {
+  list-style: none;
 }
 
-.servant-tab {
-  flex-shrink: 0;
-  font-family: var(--body);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--gray);
-  background: var(--card);
-  border: 1.5px solid #e3e7f8;
-  border-radius: 999px;
-  padding: 9px 16px;
-  cursor: pointer;
-  transition: all 0.15s ease;
+.bullet-list li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 14.5px;
+  color: var(--ink);
+  margin-bottom: 8px;
+  word-break: keep-all;
 }
 
-.servant-tab[aria-selected="true"] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+.bullet-list li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
 }
 
-.servant-card {
-  background: var(--card);
-  border: 1.5px solid #e3e7f8;
-  border-radius: var(--radius);
-  padding: 6px 18px;
-}
-
-.servant-table { width: 100%; border-collapse: collapse; }
-
-.servant-table tr + tr { border-top: 1px solid #eef1fa; }
-
-.servant-table th {
-  text-align: left;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--gray);
-  padding: 14px 0;
-  width: 40%;
-}
-
-.servant-table td {
-  font-size: 16px;
-  font-weight: 700;
-  padding: 14px 0;
-}
-
-/* ---------- 푸터 ---------- */
-
-.foot {
-  text-align: center;
-  padding: 44px var(--pad) calc(env(safe-area-inset-bottom, 0px) + 36px);
-  font-family: var(--display);
-  font-size: 14px;
-  letter-spacing: 0.12em;
-  color: #aab1d6;
-}
-
-.foot-sub {
-  font-family: var(--body);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0;
-  margin-top: 4px;
-}
-
-/* ---------- 접근성 / 모션 ---------- */
-
-:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .dot { animation: none; }
-  .order-item { transition: none; }
-}
+.week-card:first-child .week-date { background: var(--red); }
