@@ -1,0 +1,348 @@
+/* ==========================================================
+   DREAM YOUTH HOME — home.css
+   style.css의 변수(--blue, --red, --ink 등)를 그대로 사용합니다.
+   ========================================================== */
+
+/* body의 max-width(--content-max)는 style.css에서 반응형으로 관리됩니다 */
+
+/* ---------- 상단 네비게이션 ---------- */
+
+.site-nav {
+  background: var(--blue-deep);
+  color: #fff;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) var(--pad) 14px;
+}
+
+.site-nav-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.site-logo {
+  font-family: var(--display);
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  color: #fff;
+  text-decoration: none;
+}
+
+.btn-cta-small {
+  flex-shrink: 0;
+  background: var(--red);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.site-nav-links a {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.site-nav-links a:hover { color: #fff; }
+
+/* ---------- 홈 히어로 ---------- */
+
+.home-hero {
+  background:
+    radial-gradient(120% 90% at 100% 0%, #3050ff 0%, transparent 55%),
+    var(--blue);
+  color: #fff;
+  padding: 40px var(--pad) 44px;
+  border-radius: 0 0 28px 28px;
+  text-align: center;
+}
+
+.home-hero-eyebrow {
+  font-family: var(--display);
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: #ffd3d6;
+  margin-bottom: 14px;
+}
+
+.home-hero-title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(26px, 7vw, 36px);
+  line-height: 1.3;
+  word-break: keep-all;
+  margin-bottom: 16px;
+}
+
+.home-hero-sub {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  word-break: keep-all;
+  margin-bottom: 26px;
+}
+
+.home-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.btn-cta {
+  background: var(--red);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  text-decoration: none;
+  padding: 15px 20px;
+  border-radius: 14px;
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14.5px;
+  text-decoration: none;
+  padding: 13px 20px;
+  border-radius: 14px;
+}
+
+/* ---------- 소개 ---------- */
+
+.about-lead {
+  font-size: 17px;
+  font-weight: 800;
+  word-break: keep-all;
+  margin-bottom: 12px;
+}
+
+.about-body {
+  font-size: 14.5px;
+  color: var(--gray);
+  word-break: keep-all;
+  margin-bottom: 28px;
+}
+
+.value-heading {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.value-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.value-card {
+  background: var(--card);
+  border: 1.5px solid #e3e7f8;
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.value-no {
+  display: inline-block;
+  font-family: var(--display);
+  font-size: 13px;
+  color: var(--blue);
+  background: var(--blue-soft);
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.value-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.value-en {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray);
+  margin-left: 2px;
+}
+
+.value-quote {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  word-break: keep-all;
+  margin-bottom: 6px;
+}
+
+.value-desc {
+  font-size: 14px;
+  color: var(--gray);
+  word-break: keep-all;
+}
+
+.vision-box {
+  background:
+    radial-gradient(90% 60% at 0% 100%, #1a2fe0 0%, transparent 50%),
+    var(--blue-deep);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 26px 22px;
+  text-align: center;
+}
+
+.vision-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #8fa0ff;
+  margin-bottom: 10px;
+}
+
+.vision-text {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(18px, 4.5vw, 22px);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+/* ---------- 오시는 길 ---------- */
+
+.location-card {
+  background: var(--card);
+  border: 1.5px solid #e3e7f8;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.location-map {
+  position: relative;
+  width: 100%;
+  padding-top: 56%;
+  background: var(--bg);
+}
+.location-map iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.location-info {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.location-address {
+  font-size: 15.5px;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.btn-ghost-small {
+  flex-shrink: 0;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-weight: 800;
+  font-size: 13.5px;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* ---------- 연락처 ---------- */
+
+.contact-card {
+  background: var(--card);
+  border: 1.5px solid #e3e7f8;
+  border-radius: var(--radius);
+  padding: 22px;
+}
+
+.contact-name {
+  font-size: 14.5px;
+  color: var(--gray);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.contact-phone {
+  display: inline-block;
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.contact-phone:hover { color: var(--blue); }
+
+/* ---------- SNS ---------- */
+
+.sns-section { padding-bottom: 12px; }
+
+.sns-cta { text-align: center; }
+.sns-cta .section-sub { margin-bottom: 20px; }
+
+.sns-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sns-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1.5px solid #e3e7f8;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  padding: 13px 22px;
+  border-radius: 999px;
+}
+.sns-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ==========================================================
+   반응형 — 태블릿 / 데스크톱
+   ========================================================== */
+
+@media (min-width: 700px) {
+  .home-hero-actions { flex-direction: row; justify-content: center; }
+  .btn-cta, .btn-ghost { flex: 0 0 auto; }
+
+  .value-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .value-grid { grid-template-columns: repeat(4, 1fr); }
+
+  .location-map { padding-top: 38%; }
+}
