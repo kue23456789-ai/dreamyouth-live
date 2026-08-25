@@ -2,41 +2,89 @@
   "meta": {
     "ministry": "DREAM YOUTH",
     "ministryKo": "드림유스",
-    "updated": "2026-07-26"
+    "updated": "2026-08-25"
   },
-
   "worship": {
     "title": "부어주신 은혜, 흘려보내는 우리",
     "message": "받은 은혜는 붙잡을 때가 아니라 흘려보낼 때 완성됩니다.",
     "verse": "이사야 56:7",
     "preacher": "권규호 전도사"
   },
-
   "about": {
     "photo": ""
   },
-
   "live": {
     "currentOrder": 1,
     "note": "currentOrder: 현재 진행 중인 순서의 번호(0부터 시작). 예배 전에는 -1로 두세요."
   },
-
   "order": [
-    { "time": "11:00", "name": "찬양",       "detail": "드림유스 찬양팀과 함께",         "type": "praise" },
-    { "time": "11:25", "name": "대표기도",   "detail": "이번 주 섬김이 명단 참고",       "type": "prayer" },
-    { "time": "11:30", "name": "말씀",       "detail": "부어주신 은혜, 흘려보내는 우리", "type": "word" },
-    { "time": "12:00", "name": "결단 찬양",  "detail": "말씀에 응답하는 시간",           "type": "final" },
-    { "time": "12:10", "name": "봉헌 · 광고", "detail": "공지사항을 함께 확인해요",       "type": "notice" },
-    { "time": "12:20", "name": "축도",       "detail": "축복하며 파송",                  "type": "end" }
+    {
+      "time": "11:00",
+      "name": "찬양",
+      "detail": "드림유스 찬양팀과 함께",
+      "type": "praise"
+    },
+    {
+      "time": "11:25",
+      "name": "대표기도",
+      "detail": "이번 주 섬김이 명단 참고",
+      "type": "prayer"
+    },
+    {
+      "time": "11:30",
+      "name": "말씀",
+      "detail": "부어주신 은혜, 흘려보내는 우리",
+      "type": "word"
+    },
+    {
+      "time": "12:00",
+      "name": "결단 찬양",
+      "detail": "말씀에 응답하는 시간",
+      "type": "final"
+    },
+    {
+      "time": "12:10",
+      "name": "봉헌 · 광고",
+      "detail": "공지사항을 함께 확인해요",
+      "type": "notice"
+    },
+    {
+      "time": "12:20",
+      "name": "축도",
+      "detail": "축복하며 파송",
+      "type": "end"
+    }
   ],
-
   "songs": [
-    { "no": 1, "title": "예수 이름 높이세",     "key": "G", "line": "예수 이름 높이세 주를 찬양하며" },
-    { "no": 2, "title": "은혜 아니면",          "key": "A", "line": "나 서 있는 이 자리 은혜 아니면" },
-    { "no": 3, "title": "성령이 오셨네",        "key": "E", "line": "성령이 오셨네 우리 안에 오셨네" },
-    { "no": 4, "title": "주님 다시 오실 때까지", "key": "D", "line": "주님 다시 오실 때까지 나는 이 길을 가리라", "final": true }
+    {
+      "no": 1,
+      "title": "예수 이름 높이세",
+      "key": "G",
+      "line": "예수 이름 높이세 주를 찬양하며",
+      "final": false
+    },
+    {
+      "no": 2,
+      "title": "은혜 아니면",
+      "key": "A",
+      "line": "나 서 있는 이 자리 은혜 아니면",
+      "final": false
+    },
+    {
+      "no": 3,
+      "title": "성령이 오셨네",
+      "key": "E",
+      "line": "성령이 오셨네 우리 안에 오셨네",
+      "final": false
+    },
+    {
+      "no": 4,
+      "title": "주님 다시 오실 때까지",
+      "key": "D",
+      "line": "주님 다시 오실 때까지 나는 이 길을 가리라",
+      "final": true
+    }
   ],
-
   "notices": [
     {
       "badge": "수련회",
@@ -63,26 +111,55 @@
       "highlight": false
     }
   ],
-
   "servants": [
     {
       "label": "7월 26일 (오늘)",
       "roles": [
-        { "role": "대표기도", "name": "김OO (고2)" },
-        { "role": "봉헌",     "name": "박OO (중3)" },
-        { "role": "찬양 인도", "name": "이OO 선생님" },
-        { "role": "미디어",   "name": "최OO (고1)" },
-        { "role": "안내",     "name": "새가족팀" }
+        {
+          "role": "대표기도",
+          "name": "김OO (고2)"
+        },
+        {
+          "role": "봉헌",
+          "name": "박OO (중3)"
+        },
+        {
+          "role": "찬양 인도",
+          "name": "이OO 선생님"
+        },
+        {
+          "role": "미디어",
+          "name": "최OO (고1)"
+        },
+        {
+          "role": "안내",
+          "name": "새가족팀"
+        }
       ]
     },
     {
       "label": "8월 2일 (다음 주)",
       "roles": [
-        { "role": "대표기도", "name": "정OO (고3)" },
-        { "role": "봉헌",     "name": "한OO (중2)" },
-        { "role": "찬양 인도", "name": "드림유스 찬양팀" },
-        { "role": "미디어",   "name": "윤OO (고2)" },
-        { "role": "안내",     "name": "행정팀" }
+        {
+          "role": "대표기도",
+          "name": "정OO (고3)"
+        },
+        {
+          "role": "봉헌",
+          "name": "한OO (중2)"
+        },
+        {
+          "role": "찬양 인도",
+          "name": "드림유스 찬양팀"
+        },
+        {
+          "role": "미디어",
+          "name": "윤OO (고2)"
+        },
+        {
+          "role": "안내",
+          "name": "행정팀"
+        }
       ]
     }
   ]
