@@ -398,6 +398,26 @@
 }
 .sns-btn:hover { border-color: var(--blue); color: var(--blue); }
 
+/* ---------- 관리자 페이지 바로가기 ---------- */
+
+.admin-fab {
+  position: fixed;
+  left: max(14px, env(safe-area-inset-left, 0px));
+  bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(16, 20, 46, 0.85);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(16, 20, 46, 0.25);
+  z-index: 40;
+}
+.admin-fab:hover { background: var(--ink); }
+
 /* ==========================================================
    반응형 — 태블릿 / 데스크톱
    ========================================================== */
