@@ -4,6 +4,13 @@
    불러와서 소개 섹션을 채웁니다.
    ========================================================== */
 
+function textWithLineBreaks(str) {
+  return String(str || "")
+    .split("\n")
+    .map((line) => line.replace(/&/g, "&amp;").replace(/</g, "&lt;"))
+    .join("<br />");
+}
+
 (async function loadAbout() {
   try {
     const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
@@ -12,10 +19,10 @@
     const about = data.about || {};
 
     const leadEl = document.getElementById("aboutLead");
-    if (leadEl) leadEl.textContent = about.lead || "";
+    if (leadEl) leadEl.innerHTML = textWithLineBreaks(about.lead);
 
     const bodyEl = document.getElementById("aboutBody");
-    if (bodyEl) bodyEl.textContent = about.body || "";
+    if (bodyEl) bodyEl.innerHTML = textWithLineBreaks(about.body);
 
     const grid = document.getElementById("valueGrid");
     if (grid && Array.isArray(about.values)) {
@@ -34,12 +41,7 @@
     }
 
     const visionEl = document.getElementById("visionText");
-    if (visionEl && about.vision) {
-      visionEl.innerHTML = String(about.vision)
-        .split("\n")
-        .map((line) => line.replace(/&/g, "&amp;").replace(/</g, "&lt;"))
-        .join("<br />");
-    }
+    if (visionEl) visionEl.innerHTML = textWithLineBreaks(about.vision);
 
     const leaderGrid = document.getElementById("leaderGrid");
     if (leaderGrid && Array.isArray(data.leaders)) {
