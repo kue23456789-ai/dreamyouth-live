@@ -34,6 +34,7 @@ body {
   -webkit-font-smoothing: antialiased;
   max-width: var(--content-max);
   margin: 0 auto;
+  overflow-x: hidden;
 }
 
 /* ---------- ① 히어로 ---------- */
@@ -141,6 +142,23 @@ body {
 }
 
 .message-meta { font-size: 13px; opacity: 0.8; }
+
+.hero-yt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  padding: 12px 16px;
+  border-radius: 14px;
+}
+.hero-yt-btn:hover { background: rgba(255, 255, 255, 0.22); }
 
 /* ---------- 공통 섹션 ---------- */
 

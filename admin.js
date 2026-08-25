@@ -1,9 +1,11 @@
 /* ==========================================================
    DREAM YOUTH ADMIN — admin.js
-   토큰이나 로그인 없이 바로 열립니다.
-   현재 사이트에 있는 data.json / teacher-data.json을 불러와서
-   편집한 뒤 "다운로드" 버튼을 누르면 새 파일이 다운로드됩니다.
-   그 파일을 GitHub에 다시 업로드(드래그)하면 사이트에 반영돼요.
+   로그인 없이 바로 열립니다.
+   현재 사이트에 있는 data.json / teacher-data.json을 불러와서 편집합니다.
+   "자동 반영 설정"(Worker 주소 + 비밀번호)이 비어있으면 저장 시
+   파일을 다운로드하고, 그 파일을 GitHub에 다시 업로드해야 반영됩니다.
+   설정을 채우면 저장 즉시 Cloudflare Worker를 통해 GitHub에 커밋되어
+   사이트에 바로 반영됩니다.
    ========================================================== */
 
 const $ = (sel) => document.querySelector(sel);
@@ -12,7 +14,67 @@ const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 let data = null;         // 학생용 메인 데이터 (data.json)
 let teacherData = null;  // 교육목자 자료 (teacher-data.json)
 let dirty = false;       // 저장 안 된 변경사항이 있는지
-let pendingImages = {};  // { weekIndex: { dataUrl, file, ext } } 다운로드 전 임시 보관
+let pendingImages = {};  // { weekIndex: { dataUrl, file } } 다운로드/반영 전 임시 보관
+let pendingAboutPhoto = null; // { dataUrl, file } 홈페이지 소개 사진, 반영 전 임시 보관
+
+/* ---------- 자동 반영 (Cloudflare Worker) ---------- */
+
+const WORKER_URL_KEY = "dy_worker_url";
+const ADMIN_PW_KEY = "dy_admin_pw";
+
+function getWorkerConfig() {
+  return {
+    url: (localStorage.getItem(WORKER_URL_KEY) || "").trim(),
+    pw: localStorage.getItem(ADMIN_PW_KEY) || "",
+  };
+}
+
+function isPublishConfigured() {
+  const { url, pw } = getWorkerConfig();
+  return !!(url && pw);
+}
+
+function utf8ToBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function publishToGitHub(path, contentBase64, message) {
+  const { url, pw } = getWorkerConfig();
+  const res = await fetch(url.replace(/\/$/, "") + "/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${pw}` },
+    body: JSON.stringify({ path, contentBase64, message }),
+  });
+  const result = await res.json().catch(() => ({ ok: false, error: "서버 응답을 읽지 못했어요." }));
+  if (!res.ok || !result.ok) throw new Error(result.error || `HTTP ${res.status}`);
+  return result;
+}
+
+function updateSaveButtonLabels() {
+  $("#btnSaveAll").textContent = isPublishConfigured() ? "저장하고 바로 반영" : "data.json 다운로드";
+  $("#btnSaveTeacher").textContent = isPublishConfigured() ? "저장하고 바로 반영" : "teacher-data.json 다운로드";
+}
+
+$("#workerUrl") && ($("#workerUrl").value = getWorkerConfig().url);
+$("#workerPw") && ($("#workerPw").value = getWorkerConfig().pw);
+
+$("#btnSaveSettings").addEventListener("click", () => {
+  localStorage.setItem(WORKER_URL_KEY, $("#workerUrl").value.trim());
+  localStorage.setItem(ADMIN_PW_KEY, $("#workerPw").value);
+  $("#settingsMsg").textContent = isPublishConfigured()
+    ? "저장했어요! 이제부터 저장 버튼을 누르면 사이트에 바로 반영돼요."
+    : "저장했어요. (Worker 주소나 비밀번호가 비어있으면 다운로드 방식으로 동작해요)";
+  updateSaveButtonLabels();
+});
 
 /* ---------- 파일 다운로드 헬퍼 ---------- */
 
@@ -50,6 +112,7 @@ async function loadAll() {
 
     if (!dRes.ok) throw new Error("data.json을 불러오지 못했어요.");
     data = await dRes.json();
+    if (!data.about) data.about = { photo: "" };
 
     if (tRes && tRes.ok) {
       teacherData = await tRes.json();
@@ -59,6 +122,7 @@ async function loadAll() {
 
     $("#loadingView").classList.add("hidden");
     $("#editView").classList.remove("hidden");
+    updateSaveButtonLabels();
     renderAllPanels();
   } catch (err) {
     $("#loadingMsg").textContent =
@@ -102,6 +166,7 @@ function renderAllPanels() {
   renderSongs();
   renderNotices();
   renderServants();
+  renderAboutPhotoPreview();
   renderTeacherWeeks();
 }
 
@@ -138,25 +203,59 @@ function renderLiveButtons() {
 function setLiveOrder(index) {
   collectAllPanels();
   data.live.currentOrder = index;
-  downloadDataJson(`Set current order to ${index}`);
+  saveDataJson(`Set current order to ${index}`);
   renderLiveButtons();
 }
 
 $("#btnLiveOff").addEventListener("click", () => {
   collectAllPanels();
   data.live.currentOrder = -1;
-  downloadDataJson("Reset live order");
+  saveDataJson("Reset live order");
   renderLiveButtons();
 });
 
-function downloadDataJson() {
+async function saveDataJson(message) {
   data.meta.updated = new Date().toISOString().slice(0, 10);
+  const status = $("#saveStatus");
+  $("#saveBar").classList.remove("hidden");
+  const configured = isPublishConfigured();
+
+  if (configured) {
+    status.textContent = "반영 중…";
+    status.className = "save-status";
+    try {
+      if (pendingAboutPhoto) {
+        const ext = (pendingAboutPhoto.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+        const filename = `about-photo.${ext}`;
+        const base64 = await fileToBase64(pendingAboutPhoto.file);
+        await publishToGitHub(filename, base64, "Update about photo");
+        data.about = { photo: filename };
+        pendingAboutPhoto = null;
+      }
+      await publishToGitHub("data.json", utf8ToBase64(JSON.stringify(data, null, 2)), message || "Update data.json via admin");
+      dirty = false;
+      status.textContent = "저장 완료! 사이트에 바로 반영됐어요.";
+      status.className = "save-status ok";
+      renderAboutPhotoPreview();
+    } catch (err) {
+      status.textContent = "반영 실패: " + err.message;
+      status.className = "save-status err";
+    }
+    return;
+  }
+
+  if (pendingAboutPhoto) {
+    const ext = (pendingAboutPhoto.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const filename = `about-photo.${ext}`;
+    downloadBlob(filename, pendingAboutPhoto.file);
+    data.about = { photo: filename };
+    pendingAboutPhoto = null;
+  }
   downloadText("data.json", JSON.stringify(data, null, 2));
   dirty = false;
-  const status = $("#saveStatus");
   status.textContent = "data.json 다운로드 완료! 이 파일을 GitHub에 올려주세요.";
   status.className = "save-status ok";
-  $("#saveBar").classList.remove("hidden");
+  renderAboutPhotoPreview();
 }
 
 /* ----- 예배 순서 ----- */
@@ -423,8 +522,8 @@ function renderTeacherWeeks() {
       ${previewSrc ? `<div class="sheet-frame" style="max-width:220px;"><img src="${previewSrc}" style="width:100%;display:block;" /></div>` : ""}
       <input type="file" accept="image/*" class="admin-input" data-timgidx="${i}" style="padding:8px;" />
       <p class="admin-desc" style="margin:6px 0 0; font-size:12px;">
-        이미지를 선택하면 저장 시 <b>${week.id || "날짜"}.jpg</b> 라는 이름으로 따로 다운로드돼요.
-        그 파일을 GitHub의 <b>sheets</b> 폴더 안에 올려주세요.
+        이미지를 선택하고 아래 저장 버튼을 누르면 <b>${week.id || "날짜"}.jpg</b> 라는 이름으로 함께 반영돼요.
+        (자동 반영 미설정 시엔 파일이 다운로드되니 저장소 루트에 그대로 올려주세요.)
       </p>
 
       <label class="admin-label">설교 제목 (핵심 메시지 요약 위 제목)</label>
@@ -505,10 +604,37 @@ document.addEventListener("change", (e) => {
   reader.readAsDataURL(file);
 });
 
-$("#btnSaveTeacher").addEventListener("click", () => {
+$("#btnSaveTeacher").addEventListener("click", async () => {
   collectTeacherWeeks();
+  const msgEl = $("#teacherSaveMsg");
+  const hadImages = Object.keys(pendingImages).length > 0;
 
-  // 새로 선택된 이미지들을 올바른 파일명으로 각각 다운로드
+  if (isPublishConfigured()) {
+    msgEl.textContent = "반영 중…";
+    try {
+      for (const idxStr of Object.keys(pendingImages)) {
+        const idx = Number(idxStr);
+        const week = teacherData.weeks[idx];
+        if (!week) continue;
+        const img = pendingImages[idx];
+        const ext = (img.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+        const filename = `${week.id || "week" + idx}.${ext}`;
+        const base64 = await fileToBase64(img.file);
+        await publishToGitHub(filename, base64, `Upload sheet image ${filename}`);
+        week.sheetImage = filename;
+      }
+      pendingImages = {};
+      await publishToGitHub("teacher-data.json", utf8ToBase64(JSON.stringify(teacherData, null, 2)), "Update teacher-data.json via admin");
+      dirty = false;
+      msgEl.textContent = "저장 완료! 선생님 페이지에 바로 반영됐어요.";
+      renderTeacherWeeks();
+    } catch (err) {
+      msgEl.textContent = "반영 실패: " + err.message;
+    }
+    return;
+  }
+
+  // 다운로드 방식: 새로 선택된 이미지들을 올바른 파일명으로 각각 다운로드
   Object.keys(pendingImages).forEach((idxStr) => {
     const idx = Number(idxStr);
     const week = teacherData.weeks[idx];
@@ -517,25 +643,46 @@ $("#btnSaveTeacher").addEventListener("click", () => {
     const ext = (img.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
     const filename = `${week.id || "week" + idx}.${ext}`;
     downloadBlob(filename, img.file);
-    week.sheetImage = `sheets/${filename}`;
+    week.sheetImage = filename;
   });
   pendingImages = {};
 
   downloadText("teacher-data.json", JSON.stringify(teacherData, null, 2));
   dirty = false;
-
-  const msgEl = $("#teacherSaveMsg");
   msgEl.textContent = "다운로드 완료! teacher-data.json" +
-    (Object.keys(pendingImages).length ? "과 이미지 파일" : "") +
-    "을 GitHub에 올려주세요.";
+    (hadImages ? "과 이미지 파일" : "") +
+    "을 GitHub 저장소 루트에 그대로 올려주세요.";
   renderTeacherWeeks();
+});
+
+/* ---------- 홈페이지 소개 사진 ---------- */
+
+function renderAboutPhotoPreview() {
+  const wrap = $("#aboutPhotoPreviewWrap");
+  if (!wrap) return;
+  const src = pendingAboutPhoto ? pendingAboutPhoto.dataUrl : (data.about && data.about.photo ? data.about.photo : "");
+  wrap.innerHTML = src
+    ? `<div class="sheet-frame" style="max-width:220px;"><img src="${src}" style="width:100%;display:block;" /></div>`
+    : `<p class="admin-desc" style="font-size:13px;">아직 등록된 사진이 없어요.</p>`;
+}
+
+document.addEventListener("change", (e) => {
+  if (e.target.id !== "aboutPhotoInput" || !e.target.files[0]) return;
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingAboutPhoto = { dataUrl: reader.result, file };
+    markDirty();
+    renderAboutPhotoPreview();
+  };
+  reader.readAsDataURL(file);
 });
 
 /* ---------- 전체 저장 ---------- */
 
 $("#btnSaveAll").addEventListener("click", () => {
   collectAllPanels();
-  downloadDataJson();
+  saveDataJson("Update data.json via admin");
 });
 
 /* ---------- 시작 ---------- */

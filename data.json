@@ -12,6 +12,10 @@
     "preacher": "권규호 전도사"
   },
 
+  "about": {
+    "photo": ""
+  },
+
   "live": {
     "currentOrder": 1,
     "note": "currentOrder: 현재 진행 중인 순서의 번호(0부터 시작). 예배 전에는 -1로 두세요."
