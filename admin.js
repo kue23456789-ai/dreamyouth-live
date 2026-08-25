@@ -112,7 +112,14 @@ async function loadAll() {
 
     if (!dRes.ok) throw new Error("data.json을 불러오지 못했어요.");
     data = await dRes.json();
-    if (!data.about) data.about = { photo: "" };
+    if (!data.about) data.about = {};
+    data.about.photo = data.about.photo || "";
+    data.about.lead = data.about.lead || "";
+    data.about.body = data.about.body || "";
+    data.about.vision = data.about.vision || "";
+    if (!Array.isArray(data.about.values) || data.about.values.length !== 4) {
+      data.about.values = [0, 1, 2, 3].map(() => ({ title: "", titleEn: "", quote: "", desc: "" }));
+    }
 
     if (tRes && tRes.ok) {
       teacherData = await tRes.json();
@@ -167,6 +174,7 @@ function renderAllPanels() {
   renderNotices();
   renderServants();
   renderAboutPhotoPreview();
+  renderAbout();
   renderTeacherWeeks();
 }
 
@@ -461,6 +469,7 @@ function collectAllPanels() {
   collectArrayPanel("songs");
   collectArrayPanel("notices");
   collectServants();
+  collectAbout();
 }
 
 function collectArrayPanel(type) {
@@ -655,7 +664,7 @@ $("#btnSaveTeacher").addEventListener("click", async () => {
   renderTeacherWeeks();
 });
 
-/* ---------- 홈페이지 소개 사진 ---------- */
+/* ---------- 홈페이지 소개 ---------- */
 
 function renderAboutPhotoPreview() {
   const wrap = $("#aboutPhotoPreviewWrap");
@@ -677,6 +686,60 @@ document.addEventListener("change", (e) => {
   };
   reader.readAsDataURL(file);
 });
+
+function renderAbout() {
+  if (!$("#aboutLeadInput")) return;
+  $("#aboutLeadInput").value = data.about.lead || "";
+  $("#aboutBodyInput").value = data.about.body || "";
+  $("#aboutVisionInput").value = data.about.vision || "";
+  renderAboutValues();
+}
+
+function collectAbout() {
+  if (!$("#aboutLeadInput")) return;
+  data.about.lead = $("#aboutLeadInput").value.trim();
+  data.about.body = $("#aboutBodyInput").value.trim();
+  data.about.vision = $("#aboutVisionInput").value.trim();
+  collectAboutValues();
+}
+
+function renderAboutValues() {
+  const wrap = $("#aboutValueRows");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  data.about.values.forEach((v, i) => {
+    const row = document.createElement("div");
+    row.className = "repeat-row";
+    row.innerHTML = `
+      <div class="repeat-row-head">
+        <span class="repeat-row-title">${i + 1}번째 방향</span>
+      </div>
+      <div class="field-grid-2">
+        <div>
+          <label class="admin-label">제목</label>
+          <input class="admin-input" data-vfield="title" data-vidx="${i}" value="${escAttr(v.title)}" />
+        </div>
+        <div>
+          <label class="admin-label">영문 표기</label>
+          <input class="admin-input" data-vfield="titleEn" data-vidx="${i}" value="${escAttr(v.titleEn)}" />
+        </div>
+      </div>
+      <label class="admin-label">한 줄 강조 문구</label>
+      <input class="admin-input" data-vfield="quote" data-vidx="${i}" value="${escAttr(v.quote)}" />
+      <label class="admin-label">설명</label>
+      <textarea class="admin-textarea" rows="2" data-vfield="desc" data-vidx="${i}">${escHtml(v.desc)}</textarea>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+function collectAboutValues() {
+  $$("[data-vidx]").forEach((el) => {
+    const idx = Number(el.dataset.vidx);
+    if (!data.about.values[idx]) return;
+    data.about.values[idx][el.dataset.vfield] = el.value.trim();
+  });
+}
 
 /* ---------- 전체 저장 ---------- */
 

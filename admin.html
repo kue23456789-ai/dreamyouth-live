@@ -116,17 +116,31 @@
         <button class="admin-btn admin-btn-add" data-add="servants">+ 주차 추가</button>
       </section>
 
-      <!-- 홈페이지 소개 사진 -->
+      <!-- 홈페이지 소개 -->
       <section class="admin-card admin-panel hidden" data-panel="home">
-        <h2 class="admin-h2">🏠 홈페이지 소개 사진</h2>
+        <h2 class="admin-h2">🏠 홈페이지 소개</h2>
         <p class="admin-desc">
-          홈페이지(index.html) <b>드림유스 소개</b> 섹션에 글과 함께 나오는 사진이에요.
+          홈페이지(index.html) <b>드림유스 소개</b> 섹션 전체를 여기서 편집해요.
         </p>
+
+        <label class="admin-label">소개 사진</label>
         <div id="aboutPhotoPreviewWrap" style="margin-bottom:10px;"></div>
         <input type="file" accept="image/*" class="admin-input" id="aboutPhotoInput" style="padding:8px;" />
         <p class="admin-desc" style="margin:6px 0 0; font-size:12px;">
           사진을 선택한 뒤 하단 저장 버튼을 눌러야 반영돼요.
         </p>
+
+        <label class="admin-label" style="margin-top:20px;">소개 리드 문장 (굵게 강조되는 첫 문장)</label>
+        <textarea id="aboutLeadInput" class="admin-textarea" rows="2"></textarea>
+
+        <label class="admin-label">소개 본문</label>
+        <textarea id="aboutBodyInput" class="admin-textarea" rows="3"></textarea>
+
+        <label class="admin-label" style="margin-top:20px;">핵심 방향 4가지</label>
+        <div id="aboutValueRows"></div>
+
+        <label class="admin-label" style="margin-top:16px;">비전 문구 (줄바꿈하면 그대로 여러 줄로 나와요)</label>
+        <textarea id="aboutVisionInput" class="admin-textarea" rows="2"></textarea>
       </section>
 
       <!-- 교육목자 자료 (선생님 전용 페이지) -->
