@@ -74,6 +74,7 @@
         <button class="admin-tab" data-tab="notices">공지사항</button>
         <button class="admin-tab" data-tab="servants">섬김 명단</button>
         <button class="admin-tab" data-tab="home">홈페이지</button>
+        <button class="admin-tab" data-tab="leaders">섬기는 이</button>
         <button class="admin-tab" data-tab="teacher">교육목자 자료</button>
       </nav>
 
@@ -141,6 +142,16 @@
 
         <label class="admin-label" style="margin-top:16px;">비전 문구 (줄바꿈하면 그대로 여러 줄로 나와요)</label>
         <textarea id="aboutVisionInput" class="admin-textarea" rows="2"></textarea>
+      </section>
+
+      <!-- 섬기는 이 -->
+      <section class="admin-card admin-panel hidden" data-panel="leaders">
+        <h2 class="admin-h2">🙋 섬기는 이</h2>
+        <p class="admin-desc">
+          홈페이지 <b>섬기는 이</b> 섹션에 사진과 함께 나오는 사람들이에요.
+        </p>
+        <div id="leaderRows"></div>
+        <button class="admin-btn admin-btn-add" data-add="leaders">+ 섬기는 이 추가</button>
       </section>
 
       <!-- 교육목자 자료 (선생님 전용 페이지) -->

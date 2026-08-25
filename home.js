@@ -41,6 +41,27 @@
         .join("<br />");
     }
 
+    const leaderGrid = document.getElementById("leaderGrid");
+    if (leaderGrid && Array.isArray(data.leaders)) {
+      leaderGrid.innerHTML = "";
+      data.leaders.forEach((leader) => {
+        const card = document.createElement("article");
+        card.className = "leader-card";
+        card.innerHTML = `
+          <div class="leader-photo-frame">
+            ${leader.photo ? `<img src="${leader.photo}" class="leader-photo" alt="${leader.name || ""}" />` : `<div class="leader-photo-placeholder">🙋</div>`}
+          </div>
+          <p class="leader-name">${leader.name || ""}</p>
+          <p class="leader-role">${leader.role || ""}</p>
+          <div class="leader-links">
+            ${leader.phone ? `<a class="leader-link" href="tel:${leader.phone.replace(/-/g, "")}">📞 ${leader.phone}</a>` : ""}
+            ${leader.instagram ? `<a class="leader-link" href="${leader.instagram}" target="_blank" rel="noopener">📷 인스타그램</a>` : ""}
+          </div>
+        `;
+        leaderGrid.appendChild(card);
+      });
+    }
+
     if (about.photo) {
       const hero = document.getElementById("aboutHero");
       const img = document.getElementById("aboutPhoto");

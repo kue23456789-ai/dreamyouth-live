@@ -16,6 +16,45 @@ let teacherData = null;  // 교육목자 자료 (teacher-data.json)
 let dirty = false;       // 저장 안 된 변경사항이 있는지
 let pendingImages = {};  // { weekIndex: { dataUrl, file } } 다운로드/반영 전 임시 보관
 let pendingAboutPhoto = null; // { dataUrl, file } 홈페이지 소개 사진, 반영 전 임시 보관
+let pendingLeaderImages = {}; // { leaderIndex: { dataUrl, file } } 섬기는 이 사진, 반영 전 임시 보관
+
+/* ---------- 이미지 업로드 전 자동 리사이즈 (용량 최적화) ---------- */
+
+function resizeImageFile(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round(height * (maxDim / width));
+          width = maxDim;
+        } else {
+          width = Math.round(width * (maxDim / height));
+          height = maxDim;
+        }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(url);
+          resolve(blob || file);
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file); // 리사이즈 실패 시 원본 그대로 사용
+    };
+    img.src = url;
+  });
+}
 
 /* ---------- 자동 반영 (Cloudflare Worker) ---------- */
 
@@ -120,6 +159,7 @@ async function loadAll() {
     if (!Array.isArray(data.about.values) || data.about.values.length !== 4) {
       data.about.values = [0, 1, 2, 3].map(() => ({ title: "", titleEn: "", quote: "", desc: "" }));
     }
+    if (!Array.isArray(data.leaders)) data.leaders = [];
 
     if (tRes && tRes.ok) {
       teacherData = await tRes.json();
@@ -175,6 +215,7 @@ function renderAllPanels() {
   renderServants();
   renderAboutPhotoPreview();
   renderAbout();
+  renderLeaders();
   renderTeacherWeeks();
 }
 
@@ -237,14 +278,27 @@ async function saveDataJson(message) {
         const filename = `about-photo.${ext}`;
         const base64 = await fileToBase64(pendingAboutPhoto.file);
         await publishToGitHub(filename, base64, "Update about photo");
-        data.about = { photo: filename };
+        data.about.photo = filename;
         pendingAboutPhoto = null;
       }
+      for (const idxStr of Object.keys(pendingLeaderImages)) {
+        const idx = Number(idxStr);
+        const leader = data.leaders[idx];
+        if (!leader) continue;
+        const img = pendingLeaderImages[idx];
+        const ext = (img.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+        const filename = `leader-${leader.id || idx}.${ext}`;
+        const base64 = await fileToBase64(img.file);
+        await publishToGitHub(filename, base64, `Update leader photo ${filename}`);
+        leader.photo = filename;
+      }
+      pendingLeaderImages = {};
       await publishToGitHub("data.json", utf8ToBase64(JSON.stringify(data, null, 2)), message || "Update data.json via admin");
       dirty = false;
       status.textContent = "저장 완료! 사이트에 바로 반영됐어요.";
       status.className = "save-status ok";
       renderAboutPhotoPreview();
+      renderLeaders();
     } catch (err) {
       status.textContent = "반영 실패: " + err.message;
       status.className = "save-status err";
@@ -256,14 +310,26 @@ async function saveDataJson(message) {
     const ext = (pendingAboutPhoto.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
     const filename = `about-photo.${ext}`;
     downloadBlob(filename, pendingAboutPhoto.file);
-    data.about = { photo: filename };
+    data.about.photo = filename;
     pendingAboutPhoto = null;
   }
+  Object.keys(pendingLeaderImages).forEach((idxStr) => {
+    const idx = Number(idxStr);
+    const leader = data.leaders[idx];
+    if (!leader) return;
+    const img = pendingLeaderImages[idx];
+    const ext = (img.file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const filename = `leader-${leader.id || idx}.${ext}`;
+    downloadBlob(filename, img.file);
+    leader.photo = filename;
+  });
+  pendingLeaderImages = {};
   downloadText("data.json", JSON.stringify(data, null, 2));
   dirty = false;
   status.textContent = "data.json 다운로드 완료! 이 파일을 GitHub에 올려주세요.";
   status.className = "save-status ok";
   renderAboutPhotoPreview();
+  renderLeaders();
 }
 
 /* ----- 예배 순서 ----- */
@@ -407,6 +473,10 @@ document.addEventListener("click", (e) => {
     if (type === "songs") data.songs.push({ no: data.songs.length + 1, title: "새 찬양", key: "", line: "", final: false });
     if (type === "notices") data.notices.push({ badge: "공지", title: "새 공지", desc: "", highlight: false });
     if (type === "servants") data.servants.push({ label: "새 주차", roles: [{ role: "대표기도", name: "" }] });
+    if (type === "leaders") {
+      data.leaders.push({ id: String(Date.now()), photo: "", name: "새 섬기는 이", role: "", phone: "", instagram: "" });
+      pendingLeaderImages = {};
+    }
     renderAllPanels();
     markDirty();
     return;
@@ -418,6 +488,7 @@ document.addEventListener("click", (e) => {
     const type = delBtn.dataset.del;
     const idx = Number(delBtn.dataset.idx);
     data[type].splice(idx, 1);
+    if (type === "leaders") pendingLeaderImages = {};
     renderAllPanels();
     markDirty();
     return;
@@ -470,6 +541,7 @@ function collectAllPanels() {
   collectArrayPanel("notices");
   collectServants();
   collectAbout();
+  collectLeaders();
 }
 
 function collectArrayPanel(type) {
@@ -598,12 +670,12 @@ document.addEventListener("click", (e) => {
   }
 });
 
-document.addEventListener("change", (e) => {
+document.addEventListener("change", async (e) => {
   const fileInput = e.target.closest("[data-timgidx]");
   if (!fileInput || !fileInput.files[0]) return;
 
   const idx = Number(fileInput.dataset.timgidx);
-  const file = fileInput.files[0];
+  const file = await resizeImageFile(fileInput.files[0], 1600, 0.85);
   const reader = new FileReader();
   reader.onload = () => {
     pendingImages[idx] = { dataUrl: reader.result, file };
@@ -675,9 +747,9 @@ function renderAboutPhotoPreview() {
     : `<p class="admin-desc" style="font-size:13px;">아직 등록된 사진이 없어요.</p>`;
 }
 
-document.addEventListener("change", (e) => {
+document.addEventListener("change", async (e) => {
   if (e.target.id !== "aboutPhotoInput" || !e.target.files[0]) return;
-  const file = e.target.files[0];
+  const file = await resizeImageFile(e.target.files[0], 2200, 0.78);
   const reader = new FileReader();
   reader.onload = () => {
     pendingAboutPhoto = { dataUrl: reader.result, file };
@@ -740,6 +812,73 @@ function collectAboutValues() {
     data.about.values[idx][el.dataset.vfield] = el.value.trim();
   });
 }
+
+/* ---------- 섬기는 이 ---------- */
+
+function renderLeaders() {
+  const wrap = $("#leaderRows");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  data.leaders.forEach((leader, i) => {
+    const row = document.createElement("div");
+    row.className = "repeat-row";
+    const previewSrc = pendingLeaderImages[i] ? pendingLeaderImages[i].dataUrl : leader.photo || "";
+    row.innerHTML = `
+      <div class="repeat-row-head">
+        <span class="repeat-row-title">${escAttr(leader.name || "새 섬기는 이")}</span>
+        <button class="admin-btn admin-btn-del" data-del="leaders" data-idx="${i}">삭제</button>
+      </div>
+
+      <label class="admin-label">사진</label>
+      ${previewSrc ? `<div class="sheet-frame" style="width:90px; height:90px; border-radius:50%; overflow:hidden;"><img src="${previewSrc}" style="width:100%; height:100%; object-fit:cover; display:block;" /></div>` : ""}
+      <input type="file" accept="image/*" class="admin-input" data-limgidx="${i}" style="padding:8px;" />
+
+      <div class="field-grid-2" style="margin-top:10px;">
+        <div>
+          <label class="admin-label">이름</label>
+          <input class="admin-input" data-lfield="name" data-lidx="${i}" value="${escAttr(leader.name)}" />
+        </div>
+        <div>
+          <label class="admin-label">직함</label>
+          <input class="admin-input" data-lfield="role" data-lidx="${i}" value="${escAttr(leader.role)}" placeholder="예: 담당 전도사" />
+        </div>
+      </div>
+      <div class="field-grid-2">
+        <div>
+          <label class="admin-label">전화번호 (선택)</label>
+          <input class="admin-input" data-lfield="phone" data-lidx="${i}" value="${escAttr(leader.phone)}" placeholder="010-0000-0000" />
+        </div>
+        <div>
+          <label class="admin-label">인스타그램 URL (선택)</label>
+          <input class="admin-input" data-lfield="instagram" data-lidx="${i}" value="${escAttr(leader.instagram)}" placeholder="https://instagram.com/..." />
+        </div>
+      </div>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+function collectLeaders() {
+  $$("[data-lidx]").forEach((el) => {
+    const idx = Number(el.dataset.lidx);
+    if (!data.leaders[idx]) return;
+    data.leaders[idx][el.dataset.lfield] = el.value.trim();
+  });
+}
+
+document.addEventListener("change", async (e) => {
+  const fileInput = e.target.closest("[data-limgidx]");
+  if (!fileInput || !fileInput.files[0]) return;
+  const idx = Number(fileInput.dataset.limgidx);
+  const file = await resizeImageFile(fileInput.files[0], 800, 0.85);
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingLeaderImages[idx] = { dataUrl: reader.result, file };
+    markDirty();
+    renderLeaders();
+  };
+  reader.readAsDataURL(file);
+});
 
 /* ---------- 전체 저장 ---------- */
 

@@ -22,6 +22,9 @@
     ],
     "vision": "하나님을 알고, 하나님을 예배하며,\n세상 가운데 하나님을 드러내는 다음세대"
   },
+  "leaders": [
+    { "id": "1", "photo": "", "name": "권규호 전도사", "role": "담당 전도사", "phone": "010-8953-2069", "instagram": "https://www.instagram.com/k_ue__" }
+  ],
   "live": {
     "currentOrder": 1,
     "note": "currentOrder: 현재 진행 중인 순서의 번호(0부터 시작). 예배 전에는 -1로 두세요."

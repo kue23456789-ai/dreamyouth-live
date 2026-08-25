@@ -14,7 +14,7 @@ const GITHUB_REPO = "dreamyouth-live";
 const GITHUB_BRANCH = "main";
 
 // 이 경로들만 커밋을 허용합니다 (그 외 경로는 전부 거부)
-const ALLOWED_PATH = /^(data\.json|teacher-data\.json|about-photo\.(jpg|jpeg|png|webp)|\d{4}-\d{2}-\d{2}\.(jpg|jpeg|png|webp))$/;
+const ALLOWED_PATH = /^(data\.json|teacher-data\.json|about-photo\.(jpg|jpeg|png|webp)|leader-[A-Za-z0-9_-]+\.(jpg|jpeg|png|webp)|\d{4}-\d{2}-\d{2}\.(jpg|jpeg|png|webp))$/;
 
 // admin.html이 실제로 열리는 곳(들)만 CORS 허용
 const ALLOWED_ORIGINS = [
