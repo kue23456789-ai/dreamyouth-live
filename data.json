@@ -45,7 +45,7 @@
   "leaders": [
     {
       "id": "1",
-      "photo": "leader-1.jpg",
+      "photo": "",
       "name": "권규호 전도사",
       "role": "담당 전도사",
       "phone": "010-8953-2069",
@@ -53,7 +53,7 @@
     }
   ],
   "live": {
-    "currentOrder": 1,
+    "currentOrder": -1,
     "note": "currentOrder: 현재 진행 중인 순서의 번호(0부터 시작). 예배 전에는 -1로 두세요."
   },
   "order": [
