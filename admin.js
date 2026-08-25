@@ -871,6 +871,37 @@ document.addEventListener("change", async (e) => {
   if (!fileInput || !fileInput.files[0]) return;
   const idx = Number(fileInput.dataset.limgidx);
   const file = await resizeImageFile(fileInput.files[0], 800, 0.85);
+
+  // 사진은 선택하는 즉시 반영 (다른 입력 필드를 마저 채우고 나중에 저장해도 됨)
+  if (isPublishConfigured()) {
+    collectAllPanels();
+    const leader = data.leaders[idx];
+    if (!leader) return;
+    pendingLeaderImages[idx] = { dataUrl: URL.createObjectURL(file), file };
+    renderLeaders();
+    const status = $("#saveStatus");
+    $("#saveBar").classList.remove("hidden");
+    status.textContent = "사진 반영 중…";
+    status.className = "save-status";
+    try {
+      const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+      const filename = `leader-${leader.id || idx}.${ext}`;
+      const base64 = await fileToBase64(file);
+      await publishToGitHub(filename, base64, `Update leader photo ${filename}`);
+      leader.photo = filename;
+      delete pendingLeaderImages[idx];
+      data.meta.updated = new Date().toISOString().slice(0, 10);
+      await publishToGitHub("data.json", utf8ToBase64(JSON.stringify(data, null, 2)), `Update leader photo ${filename}`);
+      status.textContent = "사진이 바로 반영됐어요! (다른 정보는 아래 저장 버튼으로 마저 저장해주세요)";
+      status.className = "save-status ok";
+      renderLeaders();
+    } catch (err) {
+      status.textContent = "사진 반영 실패: " + err.message;
+      status.className = "save-status err";
+    }
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = () => {
     pendingLeaderImages[idx] = { dataUrl: reader.result, file };

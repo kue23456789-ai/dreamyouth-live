@@ -22,7 +22,7 @@
       grid.innerHTML = "";
       about.values.forEach((v, i) => {
         const card = document.createElement("article");
-        card.className = "value-card";
+        card.className = "value-card reveal";
         card.innerHTML = `
           <span class="value-no">${String(i + 1).padStart(2, "0")}</span>
           <h4 class="value-title">${v.title || ""} <span class="value-en">${v.titleEn || ""}</span></h4>
@@ -46,16 +46,18 @@
       leaderGrid.innerHTML = "";
       data.leaders.forEach((leader) => {
         const card = document.createElement("article");
-        card.className = "leader-card";
+        card.className = "leader-card reveal";
         card.innerHTML = `
-          <div class="leader-photo-frame">
-            ${leader.photo ? `<img src="${leader.photo}" class="leader-photo" alt="${leader.name || ""}" />` : `<div class="leader-photo-placeholder">🙋</div>`}
-          </div>
-          <p class="leader-name">${leader.name || ""}</p>
-          <p class="leader-role">${leader.role || ""}</p>
-          <div class="leader-links">
-            ${leader.phone ? `<a class="leader-link" href="tel:${leader.phone.replace(/-/g, "")}">📞 ${leader.phone}</a>` : ""}
-            ${leader.instagram ? `<a class="leader-link" href="${leader.instagram}" target="_blank" rel="noopener">📷 인스타그램</a>` : ""}
+          <div class="leader-photo-wrap">
+            ${leader.photo ? `<img src="${leader.photo}" class="leader-photo" alt="${leader.name || ""}" />` : `<div class="leader-photo-placeholder" aria-hidden="true">🙋</div>`}
+            <div class="leader-overlay">
+              <p class="leader-name">${leader.name || ""}</p>
+              <p class="leader-role">${leader.role || ""}</p>
+              <div class="leader-links">
+                ${leader.phone ? `<a class="leader-link" href="tel:${leader.phone.replace(/-/g, "")}">📞 ${leader.phone}</a>` : ""}
+                ${leader.instagram ? `<a class="leader-link" href="${leader.instagram}" target="_blank" rel="noopener">📷 인스타그램</a>` : ""}
+              </div>
+            </div>
           </div>
         `;
         leaderGrid.appendChild(card);
@@ -74,5 +76,42 @@
     }
   } catch (err) {
     console.error("소개 데이터를 불러오지 못했습니다:", err);
+  } finally {
+    initScrollReveal();
   }
+})();
+
+/* ---------- 스크롤 인 애니메이션 ---------- */
+
+function initScrollReveal() {
+  const targets = document.querySelectorAll(".reveal");
+  if (!targets.length) return;
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("in"));
+    return;
+  }
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          io.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+  );
+  targets.forEach((el) => io.observe(el));
+}
+
+/* ---------- 상단 네비게이션 스크롤 스타일 ---------- */
+
+(function initNavScroll() {
+  const nav = document.querySelector(".site-nav");
+  if (!nav) return;
+  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
 })();
