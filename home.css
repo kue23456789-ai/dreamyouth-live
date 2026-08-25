@@ -286,6 +286,8 @@
 }
 
 .value-card {
+  display: flex;
+  flex-direction: column;
   background: var(--card);
   border: none;
   border-radius: 26px;
@@ -310,24 +312,37 @@
   transform: rotate(-3deg);
 }
 
+/* 카드마다 제목/영문/한 줄 문구 길이가 달라도 격자 안에서 줄이 맞도록
+   각 구간에 최소 높이를 줘서 아래 설명이 항상 같은 위치에서 시작하게 합니다 */
+
+.value-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 62px;
+  margin-bottom: 8px;
+}
+
 .value-title {
   font-size: 18px;
   font-weight: 800;
-  margin-bottom: 6px;
+  line-height: 1.3;
 }
 .value-en {
   font-size: 12px;
   font-weight: 700;
   color: var(--gray);
-  margin-left: 2px;
+  line-height: 1.3;
 }
 
 .value-quote {
   font-size: 14px;
   font-weight: 700;
   color: var(--blue);
+  line-height: 1.4;
   word-break: keep-all;
-  margin-bottom: 6px;
+  min-height: 40px;
+  margin-bottom: 8px;
 }
 
 .value-desc {

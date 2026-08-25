@@ -32,7 +32,10 @@ function textWithLineBreaks(str) {
         card.className = "value-card reveal";
         card.innerHTML = `
           <span class="value-no">${String(i + 1).padStart(2, "0")}</span>
-          <h4 class="value-title">${v.title || ""} <span class="value-en">${v.titleEn || ""}</span></h4>
+          <div class="value-head">
+            <h4 class="value-title">${v.title || ""}</h4>
+            <span class="value-en">${v.titleEn || ""}</span>
+          </div>
           <p class="value-quote">${v.quote || ""}</p>
           <p class="value-desc">${v.desc || ""}</p>
         `;
