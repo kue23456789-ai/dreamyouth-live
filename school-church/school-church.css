@@ -120,12 +120,13 @@ p { margin: 0; }
   position: absolute; inset: 0; z-index: -1;
   /* 사진(school-church/images/school-hero.jpg)이 있으면 사진, 없으면 햇빛 톤 그라데이션 */
   background:
-    linear-gradient(180deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.12) 38%, rgba(0,0,0,.18) 62%, rgba(0,0,0,.55) 100%),
+    radial-gradient(70% 55% at 50% 50%, rgba(0,0,0,.34) 0%, rgba(0,0,0,0) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.28) 38%, rgba(0,0,0,.32) 62%, rgba(0,0,0,.62) 100%),
     url("images/school-hero.jpg") center 45% / cover no-repeat,
     radial-gradient(120% 90% at 78% 8%, rgba(255,226,150,.95) 0%, rgba(240,182,92,.55) 28%, rgba(0,0,0,0) 60%),
     linear-gradient(180deg, #c9a15d 0%, #8b7a45 38%, #4f5a2f 70%, #2c3420 100%);
 }
-.sc-hero-copy { max-width: 900px; }
+.sc-hero-copy { max-width: 900px; text-shadow: 0 1px 14px rgba(0,0,0,.35); }
 .sc-hero-title {
   font-size: clamp(52px, 9.6vw, 116px);
   font-weight: 700; letter-spacing: -0.045em; line-height: 1;
