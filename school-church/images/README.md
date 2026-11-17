@@ -9,3 +9,9 @@
 | `school-gate.jpg` | ‘학교 정문 앞 기도’ 카드 (교문) | 1400×800 |
 
 학생 얼굴이 보이는 사진은 보호자 동의를 받은 사진만 사용해주세요.
+
+## 현재 사용 중인 사진
+
+- `school-hero.jpg`: "Taipei American School Building 20090801" — Wikimedia Commons, **CC0(퍼블릭 도메인)**.
+  출처 표기 의무는 없어요. 색감을 따뜻하게 보정하고 1920×1080으로 잘랐어요.
+  https://commons.wikimedia.org/wiki/File:Taipei_American_School_Building_20090801.jpg
