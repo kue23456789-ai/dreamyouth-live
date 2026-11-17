@@ -1,0 +1,5 @@
+# 로컬 개발 전용 값입니다. `cp .dev.vars.example .dev.vars` 후 사용하세요.
+# DEV_PREVIEW=1 이면 공개 달력에 시안용 예시 일정이 함께 보입니다(운영에는 설정하지 마세요).
+DEV_PREVIEW=1
+ADMIN_PASSWORD=dev-admin-1234
+SESSION_SECRET=dev-only-session-secret-change-me-0123456789

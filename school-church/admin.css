@@ -1,0 +1,62 @@
+/* 스쿨처치 관리 화면 (school-church.css 위에 덧씌움) */
+
+.ad-body { background: var(--soft); }
+.ad-header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--gutter) 14px;
+  background: #fff; border-bottom: 1px solid var(--line);
+}
+.ad-logo { text-decoration: none; font-size: 14px; letter-spacing: 0.02em; white-space: nowrap; }
+.ad-logo b { font-weight: 760; }
+.ad-tag { margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0; }
+.ad-main { max-width: 980px; margin: 0 auto; padding: 28px var(--gutter) 60px; }
+
+.ad-login { max-width: 420px; margin: 40px auto; padding: 28px 24px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.ad-login h1 { font-size: 26px; font-weight: 690; }
+.ad-login > p { margin: 8px 0 20px; color: var(--muted); font-size: 14px; }
+.ad-login-form { grid-template-columns: 1fr; }
+.ad-login-form input { width: 100%; height: 46px; padding: 0 14px; border: 1px solid #d9d9d9; border-radius: 10px; }
+
+.ad-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.ad-top h1 { font-size: 26px; font-weight: 690; }
+.ad-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.ad-filters button { height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 560; }
+.ad-filters button[aria-selected="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.ad-filters span { opacity: .7; font-variant-numeric: tabular-nums; }
+
+.ad-msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; background: #fdeceb; color: #a3231d; font-size: 14px; }
+.ad-empty { padding: 40px 0; text-align: center; color: var(--muted); }
+
+.ad-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ad-item { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+.ad-item.is-cancelled { opacity: .7; }
+.ad-item-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ad-item-head h2 { font-size: 19px; font-weight: 660; letter-spacing: -0.02em; }
+.ad-type { color: var(--ink-2); font-size: 14px; font-weight: 520; }
+.ad-created { margin-left: auto; color: var(--muted); font-size: 12.5px; }
+
+.ad-private { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; padding: 10px 14px; background: var(--soft); border-radius: 10px; }
+.ad-private div { display: flex; gap: 8px; }
+.ad-private dt { color: var(--muted); font-size: 14px; }
+.ad-private dd { margin: 0; font-weight: 580; }
+.ad-private a { text-decoration: underline; text-underline-offset: 3px; }
+
+.ad-edit { display: grid; grid-template-columns: 160px 120px minmax(0, 1fr); gap: 10px 12px; align-items: end; }
+.ad-edit label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.ad-edit input { height: 42px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 8px; background: #fff; font-weight: 450; min-width: 0; }
+.ad-edit input:focus { outline: none; border-color: var(--ink); }
+.ad-actions { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+.ad-actions .sc-btn { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.ad-btn-cancel { background: #fff; color: var(--danger); border-color: #f0c4c1; }
+.ad-btn-link { background: none; border: 0; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 0 6px !important; }
+.ad-row-msg { grid-column: 1 / -1; font-size: 13px; color: var(--sage-ink); min-height: 0; }
+.ad-row-msg.is-error { color: var(--danger); }
+.ad-row-msg:empty { display: none; }
+
+@media (max-width: 640px) {
+  .ad-edit { grid-template-columns: 1fr 1fr; }
+  .ad-place { grid-column: 1 / -1; }
+  .ad-created { margin-left: 0; width: 100%; }
+  .ad-actions .sc-btn { flex: 1 1 auto; }
+}

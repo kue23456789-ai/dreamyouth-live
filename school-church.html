@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>School Church · DREAMYOUTH</title>
+  <meta name="description" content="학교에서도, 우리는 교회입니다. 드림유스 스쿨처치 방문 일정을 확인하고 우리 학교로 초대해요." />
+  <!-- 운영 API 주소: Worker 배포 후 실제 주소로 바꿔주세요. localhost에서는 자동으로 http://localhost:8787 을 사용합니다. -->
+  <meta name="sc-api-base" content="https://dreamyouth-schoolchurch.YOUR-SUBDOMAIN.workers.dev" />
+
+  <link rel="preload" href="school-church/fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="school-church/school-church.css" />
+</head>
+<body>
+  <a class="skip-link" href="#schedule">본문으로 건너뛰기</a>
+
+  <header class="sc-header">
+    <a class="sc-logo" href="#top" aria-label="DREAMYOUTH 스쿨처치 처음으로">
+      <b>DREAMYOUTH.</b><span class="sc-logo-sep" aria-hidden="true">/</span><span>SCHOOL CHURCH</span>
+    </a>
+    <nav class="sc-nav" aria-label="주요 메뉴">
+      <a href="#schedule">방문 일정</a>
+      <a href="#intro">스쿨처치 소개</a>
+      <a href="#apply">신청하기</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- ① 첫 화면 -->
+    <section class="sc-hero" aria-labelledby="heroTitle">
+      <div class="sc-hero-bg" aria-hidden="true"></div>
+      <div class="sc-hero-copy">
+        <h1 id="heroTitle" class="sc-hero-title">School Church</h1>
+        <p class="sc-hero-lead">학교에서도, 우리는 교회입니다.</p>
+        <p class="sc-hero-sub">학교 안에 기도모임을 세우는 첫걸음, <span class="nb">함께 시작해요.</span></p>
+      </div>
+      <div class="sc-hero-bar">
+        <ol class="sc-steps" aria-label="신청 순서">
+          <li><span>01</span> 일정 확인</li>
+          <li aria-hidden="true" class="sc-step-arrow">→</li>
+          <li><span>02</span> 만남 선택</li>
+          <li aria-hidden="true" class="sc-step-arrow">→</li>
+          <li><span>03</span> 방문 신청</li>
+        </ol>
+        <a class="sc-btn sc-btn-light" href="#schedule">일정 보고 신청하기</a>
+      </div>
+    </section>
+
+    <!-- ② 월간 방문 일정 -->
+    <section id="schedule" class="sc-section" aria-labelledby="scheduleTitle">
+      <div class="sc-section-head">
+        <h2 id="scheduleTitle">우리 학교에서 <span class="nb">만나요.</span></h2>
+        <p>다른 학교의 방문 일정을 확인하고, <br class="br-pc" />우리 학교가 함께할 날짜를 골라주세요.</p>
+      </div>
+
+      <div class="sc-cal-card">
+        <div class="sc-cal-toolbar">
+          <div class="sc-cal-nav">
+            <button type="button" class="sc-icon-btn" id="calPrev" aria-label="이전 달">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <h3 class="sc-cal-title" id="calTitle" aria-live="polite">&nbsp;</h3>
+            <button type="button" class="sc-icon-btn" id="calNext" aria-label="다음 달">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="sc-chip-btn" id="calToday">오늘</button>
+          </div>
+          <ul class="sc-legend" aria-label="일정 상태 안내">
+            <li class="sc-legend-preview hidden" id="previewBadge">예시 일정</li>
+            <li><i class="dot dot-confirmed" aria-hidden="true"></i>방문 확정</li>
+            <li><i class="dot dot-pending" aria-hidden="true"></i>조율 중</li>
+          </ul>
+        </div>
+
+        <div class="sc-cal">
+          <div class="sc-cal-head" aria-hidden="true">
+            <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+          </div>
+          <div class="sc-cal-body" id="calBody"></div>
+        </div>
+
+        <p class="sc-cal-msg hidden" id="calMsg" role="status"></p>
+
+        <!-- 선택한 날짜의 일정 -->
+        <div class="sc-day" id="dayPanel" hidden>
+          <div class="sc-day-head">
+            <h4 id="dayTitle"></h4>
+            <span class="sc-day-count" id="dayCount"></span>
+          </div>
+          <ul class="sc-day-list" id="dayList"></ul>
+          <p class="sc-day-empty hidden" id="dayEmpty">등록된 방문 일정이 없어요.</p>
+          <div class="sc-day-actions">
+            <p class="sc-day-hint" id="dayHint">이미 일정이 있는 날도 다른 시간으로 신청할 수 있어요.</p>
+            <button type="button" class="sc-btn sc-btn-dark" id="applyThisDay">이 날짜로 신청하기 <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+
+        <p class="sc-cal-note">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          날짜를 누르면 그날의 일정을 볼 수 있어요. 신청 후 담당자와 일정을 조율해 방문이 확정됩니다. (공개 달력에는 개인 연락처가 표시되지 않아요.)
+        </p>
+      </div>
+    </section>
+
+    <!-- ③ 스쿨처치 소개와 만남 선택 -->
+    <section id="intro" class="sc-section" aria-labelledby="introTitle">
+      <div class="sc-section-head">
+        <h2 id="introTitle">작은 기도에서 <span class="nb">시작되는 교회.</span></h2>
+        <p>스쿨처치는 학생들이 친구들과 함께 기도하며 학교에서도 교회로 살아가는 모임이에요. 드림유스는 그 시작과 예배를 함께해요.</p>
+      </div>
+
+      <p class="sc-picked hidden" id="pickedDate" role="status"></p>
+
+      <div class="sc-cards">
+        <article class="sc-card sc-card-classroom">
+          <div class="sc-card-bg" aria-hidden="true"></div>
+          <div class="sc-card-body">
+            <span class="sc-pill">이미 기도모임이 있어요</span>
+            <h3>학교 안 모임 예배</h3>
+            <p>학생들이 모이는 자리에 전도사님이 찾아가요. 학교 상황에 맞춰 월 1~2회, 약 30분 동안 함께 예배하며 말씀을 나누고 기도해요.</p>
+            <button type="button" class="sc-btn sc-btn-dark sc-card-btn" data-pick-type="worship">이 만남 신청하기 <span aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="sc-card sc-card-gate">
+          <div class="sc-card-bg" aria-hidden="true"></div>
+          <div class="sc-card-body">
+            <span class="sc-pill">기도모임을 시작하고 싶어요</span>
+            <h3>학교 정문 앞 기도</h3>
+            <p>아직 모임이 없어도 신청할 수 있어요. 전도사님과 학교 정문 앞에서 만나 우리 학교를 위해 함께 기도해요.</p>
+            <button type="button" class="sc-btn sc-btn-dark sc-card-btn" data-pick-type="gate">이 만남 신청하기 <span aria-hidden="true">→</span></button>
+          </div>
+        </article>
+      </div>
+      <p class="sc-divider-note"><span>월 1~2회, 학교 상황에 맞춰 함께해요.</span></p>
+    </section>
+
+    <!-- ④ 신청서 -->
+    <section id="apply" class="sc-section sc-apply" aria-labelledby="applyTitle">
+      <div class="sc-apply-card">
+        <div class="sc-apply-head">
+          <h2 id="applyTitle">우리 학교로 <span class="nb">초대해요.</span></h2>
+          <p>항목을 채워 보내주시면 <br class="br-pc" />전도사님이 직접 연락드려요.</p>
+        </div>
+
+        <form class="sc-form" id="applyForm" novalidate>
+          <fieldset class="sc-field sc-field-full" id="f-type">
+            <legend class="sc-label">만남 유형 <em aria-hidden="true">*</em><span class="sr-only">(필수)</span></legend>
+            <div class="sc-segment">
+              <label><input type="radio" name="type" value="worship" /><span><b>학교 안 모임 예배</b><small>이미 기도모임이 있어요</small></span></label>
+              <label><input type="radio" name="type" value="gate" /><span><b>학교 정문 앞 기도</b><small>기도모임을 시작하고 싶어요</small></span></label>
+            </div>
+            <p class="sc-error" id="err-type" aria-live="polite"></p>
+          </fieldset>
+
+          <div class="sc-field">
+            <label class="sc-label" for="school">학교명 <em aria-hidden="true">*</em></label>
+            <input id="school" name="school" type="text" placeholder="예) 신송고등학교" autocomplete="organization" maxlength="40" required aria-describedby="err-school" />
+            <p class="sc-error" id="err-school" aria-live="polite"></p>
+          </div>
+          <div class="sc-field">
+            <label class="sc-label" for="name">신청자 이름 <em aria-hidden="true">*</em></label>
+            <input id="name" name="name" type="text" placeholder="이름을 입력하세요" autocomplete="name" maxlength="30" required aria-describedby="err-name" />
+            <p class="sc-error" id="err-name" aria-live="polite"></p>
+          </div>
+          <div class="sc-field">
+            <label class="sc-label" for="date">희망 날짜 <em aria-hidden="true">*</em></label>
+            <input id="date" name="date" type="date" required aria-describedby="err-date" />
+            <p class="sc-error" id="err-date" aria-live="polite"></p>
+          </div>
+          <div class="sc-field">
+            <label class="sc-label" for="time">희망 시간 <em aria-hidden="true">*</em></label>
+            <select id="time" name="time" required aria-describedby="err-time"><option value="">예) 12:30</option></select>
+            <p class="sc-error" id="err-time" aria-live="polite"></p>
+          </div>
+          <div class="sc-field">
+            <label class="sc-label" for="place">만날 장소 <em aria-hidden="true">*</em></label>
+            <input id="place" name="place" type="text" placeholder="예) 학교 정문 앞, 3층 음악실" maxlength="80" required aria-describedby="err-place" />
+            <p class="sc-error" id="err-place" aria-live="polite"></p>
+          </div>
+          <div class="sc-field">
+            <label class="sc-label" for="phone">연락처 <em aria-hidden="true">*</em></label>
+            <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="휴대폰 번호 (예: 010-1234-5678)" autocomplete="tel" maxlength="13" required aria-describedby="err-phone" />
+            <p class="sc-error" id="err-phone" aria-live="polite"></p>
+          </div>
+
+          <!-- 봇 차단용 (사람에게는 보이지 않음) -->
+          <div class="sc-hp" aria-hidden="true"><label>웹사이트<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+
+          <div class="sc-field-full sc-submit">
+            <p class="sc-submit-note">신청 후 전도사님이 연락드려 방문 일정을 확정해요.</p>
+            <p class="sc-form-error hidden" id="formError" role="alert"></p>
+            <button type="submit" class="sc-btn sc-btn-dark sc-btn-block" id="submitBtn">방문 신청하기 <span aria-hidden="true">→</span></button>
+          </div>
+        </form>
+
+        <!-- 접수 완료 -->
+        <div class="sc-done hidden" id="doneView" tabindex="-1" aria-live="polite">
+          <p class="sc-done-check" aria-hidden="true">✓</p>
+          <h3>신청이 접수됐어요</h3>
+          <dl class="sc-done-list">
+            <div><dt>학교</dt><dd id="doneSchool"></dd></div>
+            <div><dt>날짜</dt><dd id="doneDate"></dd></div>
+            <div><dt>시간</dt><dd id="doneTime"></dd></div>
+            <div><dt>유형</dt><dd id="doneType"></dd></div>
+            <div><dt>상태</dt><dd><span class="sc-status pending">조율 중</span></dd></div>
+          </dl>
+          <p class="sc-done-note">전도사님이 연락드려 방문 일정을 확정해요. 확정되면 달력에 ‘방문 확정’으로 표시돼요.</p>
+          <button type="button" class="sc-btn sc-btn-outline" id="newApply">다른 일정 신청하기</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sc-footer">
+    <p class="sc-footer-logo">DREAMYOUTH.</p>
+    <p>드림교회 청소년부 · <a href="index.html">드림유스 홈</a></p>
+  </footer>
+
+  <script src="school-church/school-church.js"></script>
+</body>
+</html>

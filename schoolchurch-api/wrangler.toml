@@ -1,0 +1,20 @@
+name = "dreamyouth-schoolchurch"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# 공개 사이트(신청 페이지)가 열리는 주소. 쉼표로 여러 개 지정 가능.
+# localhost는 개발용으로 항상 허용됩니다.
+[vars]
+ALLOWED_ORIGINS = "https://kue23456789-ai.github.io"
+
+# `npx wrangler d1 create dreamyouth-schoolchurch` 실행 후
+# 출력되는 database_id 값으로 바꿔주세요.
+[[d1_databases]]
+binding = "DB"
+database_name = "dreamyouth-schoolchurch"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# 비밀값(소스에 넣지 않음) — wrangler secret put 으로 설정:
+#   ADMIN_PASSWORD  관리자 로그인 비밀번호
+#   SESSION_SECRET  로그인 토큰 서명용 임의 문자열(32자 이상)

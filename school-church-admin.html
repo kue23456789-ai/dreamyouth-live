@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>스쿨처치 신청 관리 · DREAMYOUTH</title>
+  <meta name="sc-api-base" content="https://dreamyouth-schoolchurch.YOUR-SUBDOMAIN.workers.dev" />
+  <link rel="preload" href="school-church/fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="school-church/school-church.css" />
+  <link rel="stylesheet" href="school-church/admin.css" />
+</head>
+<body class="ad-body">
+  <header class="ad-header">
+    <a class="ad-logo" href="school-church.html"><b>DREAMYOUTH.</b> / SCHOOL CHURCH <span class="ad-tag">관리</span></a>
+    <button type="button" class="sc-chip-btn hidden" id="logoutBtn">로그아웃</button>
+  </header>
+
+  <main class="ad-main">
+    <!-- 로그인 -->
+    <section class="ad-login" id="loginView">
+      <h1>전도사님 로그인</h1>
+      <p>신청자 이름·연락처·상세 장소는 로그인한 관리자에게만 보여요.</p>
+      <form id="loginForm" class="sc-form ad-login-form" novalidate>
+        <div class="sc-field sc-field-full">
+          <label class="sc-label" for="password">관리자 비밀번호</label>
+          <input id="password" type="password" autocomplete="current-password" required />
+          <p class="sc-error" id="loginError" role="alert"></p>
+        </div>
+        <div class="sc-field-full"><button class="sc-btn sc-btn-dark sc-btn-block" type="submit" id="loginBtn">로그인</button></div>
+      </form>
+    </section>
+
+    <!-- 목록 -->
+    <section class="hidden" id="listView">
+      <div class="ad-top">
+        <h1>방문 신청 목록</h1>
+        <div class="ad-filters" role="tablist" aria-label="상태별 보기">
+          <button type="button" role="tab" data-filter="" aria-selected="true">전체 <span data-count=""></span></button>
+          <button type="button" role="tab" data-filter="pending" aria-selected="false">조율 중 <span data-count="pending"></span></button>
+          <button type="button" role="tab" data-filter="confirmed" aria-selected="false">방문 확정 <span data-count="confirmed"></span></button>
+          <button type="button" role="tab" data-filter="cancelled" aria-selected="false">취소 <span data-count="cancelled"></span></button>
+        </div>
+      </div>
+      <p class="ad-msg hidden" id="listMsg" role="status"></p>
+      <ul class="ad-list" id="list"></ul>
+      <p class="ad-empty hidden" id="emptyMsg">해당하는 신청이 없어요.</p>
+    </section>
+  </main>
+
+  <template id="rowTpl">
+    <li class="ad-item">
+      <div class="ad-item-head">
+        <span class="sc-status" data-k="statusLabel"></span>
+        <h2 data-k="school"></h2>
+        <span class="ad-type" data-k="typeLabel"></span>
+        <span class="ad-created" data-k="created"></span>
+      </div>
+      <dl class="ad-private">
+        <div><dt>신청자</dt><dd data-k="name"></dd></div>
+        <div><dt>연락처</dt><dd><a data-k="phone"></a></dd></div>
+      </dl>
+      <form class="ad-edit">
+        <label>날짜<input type="date" name="date" required /></label>
+        <label>시간<input type="time" name="time" step="600" required /></label>
+        <label class="ad-place">상세 장소<input type="text" name="place" maxlength="80" required /></label>
+        <div class="ad-actions">
+          <button type="submit" class="sc-btn sc-btn-outline" data-action="save">변경 저장</button>
+          <button type="button" class="sc-btn sc-btn-dark" data-action="confirmed">방문 확정</button>
+          <button type="button" class="sc-btn ad-btn-cancel" data-action="cancelled">취소</button>
+          <button type="button" class="sc-btn ad-btn-link" data-action="pending">조율 중으로 되돌리기</button>
+        </div>
+        <p class="ad-row-msg" role="status"></p>
+      </form>
+    </li>
+  </template>
+
+  <script src="school-church/admin.js"></script>
+</body>
+</html>
