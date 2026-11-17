@@ -12,7 +12,7 @@ ALLOWED_ORIGINS = "https://kue23456789-ai.github.io"
 [[d1_databases]]
 binding = "DB"
 database_name = "dreamyouth-schoolchurch"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "9cc88a9f-c0e6-49fb-884a-7a041b585231"
 migrations_dir = "migrations"
 
 # 비밀값(소스에 넣지 않음) — wrangler secret put 으로 설정:
