@@ -76,7 +76,7 @@
       if (seq !== state.reqSeq) return;
       console.error(err);
       state.events = {};
-      calMsg.textContent = "방문 일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.";
+      calMsg.textContent = "방문 일정을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.";
       calMsg.classList.remove("hidden");
     }
     renderGrid();
@@ -149,7 +149,7 @@
           const more = document.createElement("span");
           more.className = "sc-ev-more";
           more.setAttribute("aria-hidden", "true");
-          more.textContent = `+${list.length - 2}건 더보기`;
+          more.textContent = `외 ${list.length - 2}건`;
           btn.appendChild(more);
         }
         // 휴대폰: 개수만
@@ -216,10 +216,10 @@
     const btn = $("#applyThisDay");
     btn.disabled = past;
     $("#dayHint").textContent = past
-      ? "지난 날짜는 신청할 수 없어요. 다른 날짜를 골라주세요."
+      ? "지난 날짜는 신청할 수 없어요. 다른 날짜를 골라 주세요."
       : list.length
         ? "이미 일정이 있는 날도 다른 시간으로 신청할 수 있어요."
-        : "이 날짜에 우리 학교로 초대해보세요.";
+        : "이날 우리 학교로 초대해 보세요.";
   }
 
   function shiftMonth(delta) {
@@ -266,7 +266,7 @@
     const el = $("#pickedDate");
     const v = f.date.value;
     if (v && !f.type()) {
-      el.textContent = `📅 ${formatDate(v)} 선택됨 · 아래에서 만남 유형을 골라주세요.`;
+      el.textContent = `📅 ${formatDate(v)} · 이제 아래에서 어떤 만남이 좋을지 골라 주세요.`;
       el.classList.remove("hidden");
     } else {
       el.classList.add("hidden");
@@ -357,16 +357,16 @@
 
   function validate(v) {
     const e = {};
-    if (!v.type) e.type = "만남 유형을 선택해주세요.";
-    if (!v.school) e.school = "학교명을 입력해주세요.";
-    if (!v.name) e.name = "신청자 이름을 입력해주세요.";
-    if (!v.phone) e.phone = "연락처를 입력해주세요.";
-    else if (!PHONE_RE.test(v.phone.replace(/\D/g, ""))) e.phone = "휴대폰 번호 형식을 확인해주세요. (예: 010-1234-5678)";
-    if (!v.date) e.date = "희망 날짜를 선택해주세요.";
-    else if (v.date < today) e.date = "오늘 이후 날짜를 선택해주세요.";
-    else if (f.date.max && v.date > f.date.max) e.date = "1년 이내의 날짜를 선택해주세요.";
-    if (!v.time) e.time = "희망 시간을 선택해주세요.";
-    if (!v.place) e.place = "만날 장소를 입력해주세요.";
+    if (!v.type) e.type = "만남 유형을 골라 주세요.";
+    if (!v.school) e.school = "학교 이름을 적어 주세요.";
+    if (!v.name) e.name = "이름을 적어 주세요.";
+    if (!v.phone) e.phone = "연락받을 휴대폰 번호를 적어 주세요.";
+    else if (!PHONE_RE.test(v.phone.replace(/\D/g, ""))) e.phone = "휴대폰 번호를 다시 확인해 주세요. (예: 010-1234-5678)";
+    if (!v.date) e.date = "날짜를 골라 주세요.";
+    else if (v.date < today) e.date = "오늘이나 그 이후 날짜로 골라 주세요.";
+    else if (f.date.max && v.date > f.date.max) e.date = "1년 안의 날짜로 골라 주세요.";
+    if (!v.time) e.time = "시간을 골라 주세요.";
+    if (!v.place) e.place = "만날 장소를 적어 주세요.";
     return e;
   }
 
@@ -432,7 +432,7 @@
     submitBtn.disabled = true;
     submitBtn.setAttribute("aria-busy", "true");
     const label = submitBtn.innerHTML;
-    submitBtn.textContent = "접수 중…";
+    submitBtn.textContent = "보내는 중…";
 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 15000);
@@ -454,13 +454,13 @@
         showErrors(data.fields);
         idemKey = null;
       }
-      throw new Error(data.error || "저장하지 못했어요.");
+      throw new Error(data.error || "신청을 보내지 못했어요.");
     } catch (err) {
       // 실패하면 입력 내용은 그대로 두고 안내만
       formError.textContent =
         err.name === "AbortError" || err instanceof TypeError
-          ? "네트워크가 불안정해서 접수하지 못했어요. 입력한 내용은 그대로 있으니 다시 눌러주세요."
-          : `${err.message} 입력한 내용은 그대로 있어요.`;
+          ? "인터넷 연결이 불안정해서 신청을 보내지 못했어요. 적은 내용은 그대로 있으니 버튼을 한 번 더 눌러 주세요."
+          : `${err.message} 적은 내용은 그대로 남아 있어요.`;
       formError.classList.remove("hidden");
     } finally {
       clearTimeout(timer);
