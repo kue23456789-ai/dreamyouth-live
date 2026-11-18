@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#111111" />
   <title>School Church · DREAMYOUTH</title>
-  <meta name="description" content="학교에서도, 우리는 교회입니다. 드림유스 스쿨처치 방문 일정을 확인하고 우리 학교로 초대해요." />
+  <meta name="description" content="학교에서도, 우리는 교회입니다. 드림유스 전도사님이 우리 학교로 찾아가 함께 예배하고 기도해요." />
   <!-- 운영 API 주소: Worker 배포 후 실제 주소로 바꿔주세요. localhost에서는 자동으로 http://localhost:8787 을 사용합니다. -->
   <meta name="sc-api-base" content="https://dreamyouth-schoolchurch.kue23456789.workers.dev" />
 
@@ -98,7 +98,7 @@
 
         <p class="sc-cal-note">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          날짜를 누르면 그날의 일정을 볼 수 있어요. 신청 후 담당자와 일정을 조율해 방문이 확정됩니다. (공개 달력에는 개인 연락처가 표시되지 않아요.)
+          날짜를 누르면 그날 일정을 볼 수 있어요. 달력에는 학교 이름과 시간만 보이고, 이름이나 연락처는 공개되지 않아요.
         </p>
       </div>
     </section>
@@ -132,7 +132,7 @@
           </div>
         </article>
       </div>
-      <p class="sc-divider-note"><span>월 1~2회, 학교 상황에 맞춰 함께해요.</span></p>
+      <p class="sc-divider-note"><span>날짜와 시간은 학교 사정에 맞춰 함께 정해요.</span></p>
     </section>
 
     <!-- ④ 신청서 -->
@@ -140,7 +140,7 @@
       <div class="sc-apply-card">
         <div class="sc-apply-head">
           <h2 id="applyTitle">우리 학교로 <span class="nb">초대해요.</span></h2>
-          <p>항목을 채워 보내주시면 <br class="br-pc" />전도사님이 직접 연락드려요.</p>
+          <p>아래 내용을 남겨 주시면 <br class="br-pc" />전도사님이 직접 연락드릴게요.</p>
         </div>
 
         <form class="sc-form" id="applyForm" novalidate>
@@ -160,7 +160,7 @@
           </div>
           <div class="sc-field">
             <label class="sc-label" for="name">신청자 이름 <em aria-hidden="true">*</em></label>
-            <input id="name" name="name" type="text" placeholder="이름을 입력하세요" autocomplete="name" maxlength="30" required aria-describedby="err-name" />
+            <input id="name" name="name" type="text" placeholder="이름을 적어 주세요" autocomplete="name" maxlength="30" required aria-describedby="err-name" />
             <p class="sc-error" id="err-name" aria-live="polite"></p>
           </div>
           <div class="sc-field">
@@ -170,7 +170,7 @@
           </div>
           <div class="sc-field">
             <label class="sc-label" for="time">희망 시간 <em aria-hidden="true">*</em></label>
-            <select id="time" name="time" required aria-describedby="err-time"><option value="">예) 12:30</option></select>
+            <select id="time" name="time" required aria-describedby="err-time"><option value="">시간 선택</option></select>
             <p class="sc-error" id="err-time" aria-live="polite"></p>
           </div>
           <div class="sc-field">
@@ -180,7 +180,7 @@
           </div>
           <div class="sc-field">
             <label class="sc-label" for="phone">연락처 <em aria-hidden="true">*</em></label>
-            <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="휴대폰 번호 (예: 010-1234-5678)" autocomplete="tel" maxlength="13" required aria-describedby="err-phone" />
+            <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="010-1234-5678" autocomplete="tel" maxlength="13" required aria-describedby="err-phone" />
             <p class="sc-error" id="err-phone" aria-live="polite"></p>
           </div>
 
@@ -205,8 +205,8 @@
             <div><dt>유형</dt><dd id="doneType"></dd></div>
             <div><dt>상태</dt><dd><span class="sc-status pending">조율 중</span></dd></div>
           </dl>
-          <p class="sc-done-note">전도사님이 연락드려 방문 일정을 확정해요. 확정되면 달력에 ‘방문 확정’으로 표시돼요.</p>
-          <button type="button" class="sc-btn sc-btn-outline" id="newApply">다른 일정 신청하기</button>
+          <p class="sc-done-note">곧 전도사님이 연락드려서 날짜와 시간을 함께 정할게요. 일정이 정해지면 달력에도 ‘방문 확정’으로 바뀌어요.</p>
+          <button type="button" class="sc-btn sc-btn-outline" id="newApply">한 번 더 신청하기</button>
         </div>
       </div>
     </section>

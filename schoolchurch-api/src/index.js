@@ -205,7 +205,7 @@ async function verifyToken(request, env) {
 
 async function getSchedule(url, ctx) {
   const month = url.searchParams.get("month") || todayKST().slice(0, 7);
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return json({ ok: false, error: "month 형식은 YYYY-MM 입니다." }, 400, ctx);
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return json({ ok: false, error: "month는 YYYY-MM 형식으로 보내 주세요." }, 400, ctx);
   const [y, m] = month.split("-").map(Number);
   const from = `${month}-01`;
   const to = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
@@ -237,23 +237,23 @@ function validateApplication(body) {
     time: clean(body.time, 5),
     place: clean(body.place, 80),
   };
-  if (!TYPES[v.type]) errors.type = "만남 유형을 선택해주세요.";
-  if (!v.school) errors.school = "학교명을 입력해주세요.";
-  else if (v.school.length > 40) errors.school = "학교명은 40자 이내로 입력해주세요.";
-  if (!v.name) errors.name = "신청자 이름을 입력해주세요.";
-  else if (v.name.length > 30) errors.name = "이름은 30자 이내로 입력해주세요.";
+  if (!TYPES[v.type]) errors.type = "만남 유형을 골라 주세요.";
+  if (!v.school) errors.school = "학교 이름을 적어 주세요.";
+  else if (v.school.length > 40) errors.school = "학교 이름은 40자 안으로 적어 주세요.";
+  if (!v.name) errors.name = "이름을 적어 주세요.";
+  else if (v.name.length > 30) errors.name = "이름은 30자 안으로 적어 주세요.";
   v.phone = normalizePhone(v.phoneRaw);
-  if (!v.phoneRaw) errors.phone = "연락처를 입력해주세요.";
-  else if (!v.phone) errors.phone = "휴대폰 번호 형식을 확인해주세요. (예: 010-1234-5678)";
+  if (!v.phoneRaw) errors.phone = "연락받을 휴대폰 번호를 적어 주세요.";
+  else if (!v.phone) errors.phone = "휴대폰 번호를 다시 확인해 주세요. (예: 010-1234-5678)";
   const today = todayKST();
-  if (!v.date) errors.date = "희망 날짜를 선택해주세요.";
-  else if (!isValidDate(v.date)) errors.date = "날짜 형식을 확인해주세요.";
-  else if (v.date < today) errors.date = "오늘 이후 날짜를 선택해주세요.";
-  else if (v.date > addDays(today, 366)) errors.date = "1년 이내의 날짜를 선택해주세요.";
-  if (!v.time) errors.time = "희망 시간을 선택해주세요.";
-  else if (!isValidTime(v.time)) errors.time = "06:00~22:59 사이의 시간을 선택해주세요.";
-  if (!v.place) errors.place = "만날 장소를 입력해주세요.";
-  else if (v.place.length > 80) errors.place = "장소는 80자 이내로 입력해주세요.";
+  if (!v.date) errors.date = "날짜를 골라 주세요.";
+  else if (!isValidDate(v.date)) errors.date = "날짜를 다시 확인해 주세요.";
+  else if (v.date < today) errors.date = "오늘이나 그 이후 날짜로 골라 주세요.";
+  else if (v.date > addDays(today, 366)) errors.date = "1년 안의 날짜로 골라 주세요.";
+  if (!v.time) errors.time = "시간을 골라 주세요.";
+  else if (!isValidTime(v.time)) errors.time = "오전 6시부터 밤 11시 전까지의 시간으로 골라 주세요.";
+  if (!v.place) errors.place = "만날 장소를 적어 주세요.";
+  else if (v.place.length > 80) errors.place = "장소는 80자 안으로 적어 주세요.";
   return { v, errors };
 }
 
@@ -262,17 +262,17 @@ async function createApplication(request, ctx) {
   try {
     body = await request.json();
   } catch {
-    return json({ ok: false, error: "잘못된 요청입니다." }, 400, ctx);
+    return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
   }
   // 봇 차단용 숨은 입력칸
-  if (body.website) return json({ ok: false, error: "잘못된 요청입니다." }, 400, ctx);
+  if (body.website) return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
 
   const key = clean(body.idempotencyKey, 64);
-  if (!/^[A-Za-z0-9-]{16,64}$/.test(key)) return json({ ok: false, error: "잘못된 요청입니다." }, 400, ctx);
+  if (!/^[A-Za-z0-9-]{16,64}$/.test(key)) return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
 
   const { v, errors } = validateApplication(body);
   if (Object.keys(errors).length) {
-    return json({ ok: false, error: "입력 내용을 확인해주세요.", fields: errors }, 422, ctx);
+    return json({ ok: false, error: "빠졌거나 잘못 적은 칸이 있어요.", fields: errors }, 422, ctx);
   }
 
   const db = ctx.env.DB;
@@ -288,7 +288,7 @@ async function createApplication(request, ctx) {
     .run();
 
   const row = await db.prepare(`SELECT ${PUBLIC_COLUMNS} FROM applications WHERE idempotency_key = ?1`).bind(key).first();
-  if (!row) return json({ ok: false, error: "저장하지 못했어요. 잠시 후 다시 시도해주세요." }, 500, ctx);
+  if (!row) return json({ ok: false, error: "신청을 저장하지 못했어요. 조금 뒤 다시 시도해 주세요." }, 500, ctx);
   return json({ ok: true, application: toPublic(row) }, 201, ctx);
 }
 
@@ -302,7 +302,7 @@ async function adminLogin(request, ctx) {
   await env.DB.prepare("DELETE FROM login_failures WHERE ts < ?1").bind(now - LOGIN_WINDOW_SEC).run();
   const recent = await env.DB.prepare("SELECT COUNT(*) AS n FROM login_failures WHERE ip = ?1").bind(ip).first();
   if (recent && recent.n >= LOGIN_MAX_FAILURES) {
-    return json({ ok: false, error: "로그인 시도가 너무 많아요. 15분 뒤에 다시 시도해주세요." }, 429, ctx);
+    return json({ ok: false, error: "로그인을 너무 여러 번 시도했어요. 15분 뒤에 다시 해 주세요." }, 429, ctx);
   }
 
   let body = {};
@@ -335,29 +335,29 @@ async function updateApplication(request, id, ctx) {
   try {
     body = await request.json();
   } catch {
-    return json({ ok: false, error: "잘못된 요청입니다." }, 400, ctx);
+    return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
   }
   const sets = [];
   const binds = [];
   const fields = {};
   if (body.date !== undefined) {
-    if (!isValidDate(body.date)) fields.date = "날짜 형식을 확인해주세요.";
+    if (!isValidDate(body.date)) fields.date = "날짜를 다시 확인해 주세요.";
     else (sets.push("visit_date = ?"), binds.push(body.date));
   }
   if (body.time !== undefined) {
-    if (!isValidTime(body.time)) fields.time = "06:00~22:59 사이의 시간을 입력해주세요.";
+    if (!isValidTime(body.time)) fields.time = "오전 6시부터 밤 11시 전까지의 시간으로 적어 주세요.";
     else (sets.push("visit_time = ?"), binds.push(body.time));
   }
   if (body.place !== undefined) {
     const p = clean(body.place, 80);
-    if (!p || p.length > 80) fields.place = "장소를 1~80자로 입력해주세요.";
+    if (!p || p.length > 80) fields.place = "장소는 1~80자로 적어 주세요.";
     else (sets.push("place = ?"), binds.push(p));
   }
   if (body.status !== undefined) {
-    if (!STATUSES.includes(body.status)) fields.status = "상태 값이 올바르지 않아요.";
+    if (!STATUSES.includes(body.status)) fields.status = "알 수 없는 상태예요.";
     else (sets.push("status = ?"), binds.push(body.status));
   }
-  if (Object.keys(fields).length) return json({ ok: false, error: "입력 내용을 확인해주세요.", fields }, 422, ctx);
+  if (Object.keys(fields).length) return json({ ok: false, error: "빠졌거나 잘못 적은 칸이 있어요.", fields }, 422, ctx);
   if (!sets.length) return json({ ok: false, error: "변경할 내용이 없어요." }, 400, ctx);
 
   sets.push("updated_at = datetime('now')");
@@ -381,7 +381,7 @@ export default {
     }
     // 브라우저에서 오는 요청은 허용된 출처만
     if (origin && !allowedOrigin(origin, env)) {
-      return json({ ok: false, error: "허용되지 않은 출처입니다." }, 403, ctx);
+      return json({ ok: false, error: "허용되지 않은 주소에서 온 요청이에요." }, 403, ctx);
     }
 
     const url = new URL(request.url);
@@ -403,7 +403,7 @@ export default {
       return json({ ok: false, error: "Not found" }, 404, ctx);
     } catch (err) {
       console.error(err);
-      return json({ ok: false, error: "서버 오류가 발생했어요. 잠시 후 다시 시도해주세요." }, 500, ctx);
+      return json({ ok: false, error: "잠시 문제가 생겼어요. 조금 뒤 다시 시도해 주세요." }, 500, ctx);
     }
   },
 };

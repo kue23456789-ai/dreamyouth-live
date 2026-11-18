@@ -60,3 +60,4 @@
   .ad-created { margin-left: 0; width: 100%; }
   .ad-actions .sc-btn { flex: 1 1 auto; }
 }
+.ad-actions [hidden] { display: none !important; }

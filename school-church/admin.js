@@ -23,11 +23,11 @@
     let data = {};
     try { data = await res.json(); } catch {}
     if (res.status === 401 && path !== "/api/admin/login") {
-      logout("로그인이 만료됐어요. 다시 로그인해주세요.");
+      logout("로그인 시간이 지났어요. 다시 로그인해 주세요.");
       throw new Error(data.error || "로그인이 필요해요.");
     }
     if (!res.ok || !data.ok) {
-      const err = new Error(data.error || `요청 실패 (${res.status})`);
+      const err = new Error(data.error || `처리하지 못했어요. 잠시 뒤 다시 해 주세요. (${res.status})`);
       err.fields = data.fields;
       throw err;
     }
@@ -41,7 +41,7 @@
     const btn = $("#loginBtn");
     const pw = $("#password").value;
     $("#loginError").textContent = "";
-    if (!pw) { $("#loginError").textContent = "비밀번호를 입력해주세요."; return; }
+    if (!pw) { $("#loginError").textContent = "비밀번호를 적어 주세요."; return; }
     btn.disabled = true;
     try {
       const data = await api("/api/admin/login", { method: "POST", body: JSON.stringify({ password: pw }) });
@@ -82,6 +82,14 @@
     return `${m}월 ${d}일 (${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]})`;
   }
 
+  // DB 시각(UTC) → 한국 시간
+  function fmtCreated(s) {
+    const d = new Date(s.replace(" ", "T") + "Z");
+    if (Number.isNaN(d.getTime())) return s;
+    const k = new Date(d.getTime() + 9 * 3600 * 1000);
+    return `${k.getUTCMonth() + 1}월 ${k.getUTCDate()}일 ${String(k.getUTCHours()).padStart(2, "0")}:${String(k.getUTCMinutes()).padStart(2, "0")}`;
+  }
+
   function render() {
     document.querySelectorAll("[data-count]").forEach((el) => {
       const k = el.dataset.count;
@@ -101,7 +109,7 @@
     k("statusLabel").classList.add(a.status);
     k("school").textContent = a.school;
     k("typeLabel").textContent = `${a.type === "gate" ? "학교 정문 앞 기도" : "학교 안 모임 예배"} · ${fmtDate(a.date)} ${a.time}`;
-    k("created").textContent = `접수 ${a.createdAt.replace("T", " ").slice(0, 16)} (UTC)`;
+    k("created").textContent = `${fmtCreated(a.createdAt)} 접수`;
     k("name").textContent = a.name;
     k("phone").textContent = a.phone;
     k("phone").href = `tel:${a.phone.replace(/\D/g, "")}`;
@@ -116,7 +124,7 @@
 
     const msg = li.querySelector(".ad-row-msg");
     async function patch(body, okText) {
-      if (body.status === "cancelled" && !confirm(`${a.school} ${fmtDate(a.date)} 방문을 취소할까요?\n취소하면 공개 달력에서 사라져요.`)) return;
+      if (body.status === "cancelled" && !confirm(`${a.school} ${fmtDate(a.date)} 방문을 취소할까요?\n취소하면 달력에서도 사라져요.`)) return;
       const buttons = form.querySelectorAll("button");
       buttons.forEach((b) => (b.disabled = true));
       msg.className = "ad-row-msg";
@@ -137,12 +145,12 @@
     const edits = () => ({ date: form.date.value, time: form.time.value.slice(0, 5), place: form.place.value });
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      patch(edits(), "변경 내용을 저장했어요. 공개 달력에 반영됐어요.");
+      patch(edits(), "저장했어요. 달력에도 바로 반영됐어요.");
     });
     form.querySelectorAll("[data-action]:not([data-action='save'])").forEach((btn) =>
       btn.addEventListener("click", () => {
         const status = btn.dataset.action;
-        const text = { confirmed: "방문 확정으로 처리했어요.", cancelled: "취소했어요. 공개 달력에서 제외됐어요.", pending: "조율 중으로 되돌렸어요." }[status];
+        const text = { confirmed: "방문을 확정했어요. 달력에 ‘방문 확정’으로 보여요.", cancelled: "방문을 취소했어요. 달력에서도 빠졌어요.", pending: "다시 ‘조율 중’으로 바꿨어요." }[status];
         // 확정할 때 수정한 날짜·시간도 함께 저장
         patch(status === "cancelled" ? { status } : { ...edits(), status }, text);
       }),

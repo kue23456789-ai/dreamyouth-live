@@ -20,7 +20,7 @@
     <!-- 로그인 -->
     <section class="ad-login" id="loginView">
       <h1>전도사님 로그인</h1>
-      <p>신청자 이름·연락처·상세 장소는 로그인한 관리자에게만 보여요.</p>
+      <p>신청한 학생의 이름과 연락처, 만날 장소는 로그인해야 볼 수 있어요.</p>
       <form id="loginForm" class="sc-form ad-login-form" novalidate>
         <div class="sc-field sc-field-full">
           <label class="sc-label" for="password">관리자 비밀번호</label>
@@ -44,7 +44,7 @@
       </div>
       <p class="ad-msg hidden" id="listMsg" role="status"></p>
       <ul class="ad-list" id="list"></ul>
-      <p class="ad-empty hidden" id="emptyMsg">해당하는 신청이 없어요.</p>
+      <p class="ad-empty hidden" id="emptyMsg">이 목록에는 아직 신청이 없어요.</p>
     </section>
   </main>
 
@@ -65,7 +65,7 @@
         <label>시간<input type="time" name="time" step="600" required /></label>
         <label class="ad-place">상세 장소<input type="text" name="place" maxlength="80" required /></label>
         <div class="ad-actions">
-          <button type="submit" class="sc-btn sc-btn-outline" data-action="save">변경 저장</button>
+          <button type="submit" class="sc-btn sc-btn-outline" data-action="save">바뀐 내용 저장</button>
           <button type="button" class="sc-btn sc-btn-dark" data-action="confirmed">방문 확정</button>
           <button type="button" class="sc-btn ad-btn-cancel" data-action="cancelled">취소</button>
           <button type="button" class="sc-btn ad-btn-link" data-action="pending">조율 중으로 되돌리기</button>
