@@ -21,6 +21,11 @@ let r = await call("/api/applications", { method: "POST", body: JSON.stringify({
 assert.equal(r.status, 422);
 assert.ok(r.body.fields.phone && r.body.fields.date);
 
+// 1-1. 학교 안 모임 예배는 담당 선생님 확인 필수
+r = await call("/api/applications", { method: "POST", body: JSON.stringify({ ...payload, type: "worship", idempotencyKey: key + "w" }) });
+assert.equal(r.status, 422);
+assert.ok(r.body.fields.teacher);
+
 // 2. 접수 + 같은 키로 재전송해도 1건
 r = await call("/api/applications", { method: "POST", body: JSON.stringify(payload) });
 assert.equal(r.status, 201);

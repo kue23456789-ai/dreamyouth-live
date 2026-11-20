@@ -293,6 +293,8 @@ button.sc-cal-cell:hover { background: #fafaf8; }
 .sc-pill { display: inline-block; padding: 5px 12px; border-radius: 999px; background: #f3ecd9; color: #222; font-size: 13px; font-weight: 620; }
 .sc-card h3 { margin-top: 14px; font-size: clamp(24px, 2.6vw, 32px); font-weight: 690; letter-spacing: -0.035em; }
 .sc-card p { margin-top: 8px; font-size: 15px; font-weight: 450; opacity: .95; max-width: 420px; }
+.sc-card-note { display: flex; gap: 6px; margin-top: 10px !important; font-size: 14px !important; font-weight: 560; opacity: 1 !important; }
+.sc-card-note::before { content: "✓"; font-weight: 700; }
 .sc-card-btn { margin-top: 18px; background: #0b0b0b; }
 
 .sc-divider-note { display: flex; align-items: center; gap: 22px; margin: 24px auto 0; max-width: 620px; color: var(--ink-2); font-size: 15px; font-weight: 500; }
@@ -348,6 +350,11 @@ button.sc-cal-cell:hover { background: #fafaf8; }
 .sc-segment input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
 .has-error .sc-segment span { border-color: var(--danger); }
 
+.sc-teacher { margin-top: 10px; padding: 14px 16px; border-radius: 10px; background: var(--soft); border: 1px solid var(--line); font-size: 14px; color: var(--ink-2); }
+.sc-teacher b { color: var(--ink); font-weight: 620; }
+.sc-check { display: flex; align-items: center; gap: 10px; margin-top: 10px; cursor: pointer; font-size: 15px; font-weight: 580; color: var(--ink); }
+.sc-check input { width: 20px; height: 20px; margin: 0; accent-color: var(--ink); flex: none; }
+.sc-teacher.has-error { border-color: var(--danger); }
 .sc-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 .sc-submit { margin-top: 8px; }

@@ -118,8 +118,9 @@
           <div class="sc-card-body">
             <span class="sc-pill">이미 기도모임이 있어요</span>
             <h3>학교 안 모임 예배</h3>
-            <p>학생들이 모이는 자리에 전도사님이 찾아가요. 학교 상황에 맞춰 월 1~2회, 약 30분 동안 함께 예배하며 말씀을 나누고 기도해요.</p>
-            <button type="button" class="sc-btn sc-btn-dark sc-card-btn" data-pick-type="worship">이 만남 신청하기 <span aria-hidden="true">→</span></button>
+            <p>학생들이 모이는 자리로 전도사님이 찾아가요. 한 달에 한두 번, 30분 정도 함께 예배하고 말씀을 나누며 기도해요.</p>
+            <p class="sc-card-note">학교 스쿨처치 담당 선생님과 먼저 이야기를 마친 뒤 신청해 주세요.</p>
+            <button type="button" class="sc-btn sc-btn-dark sc-card-btn" data-pick-type="worship">신청하기 <span aria-hidden="true">→</span></button>
           </div>
         </article>
         <article class="sc-card sc-card-gate">
@@ -127,8 +128,9 @@
           <div class="sc-card-body">
             <span class="sc-pill">기도모임을 시작하고 싶어요</span>
             <h3>학교 정문 앞 기도</h3>
-            <p>아직 모임이 없어도 신청할 수 있어요. 전도사님과 학교 정문 앞에서 만나 우리 학교를 위해 함께 기도해요.</p>
-            <button type="button" class="sc-btn sc-btn-dark sc-card-btn" data-pick-type="gate">이 만남 신청하기 <span aria-hidden="true">→</span></button>
+            <p>아직 모임이 없어도 괜찮아요. 학교 정문 앞에서 전도사님과 만나 우리 학교를 위해 함께 기도해요.</p>
+            <p class="sc-card-note">친구 한 명과 함께여도 충분해요.</p>
+            <button type="button" class="sc-btn sc-btn-dark sc-card-btn" data-pick-type="gate">신청하기 <span aria-hidden="true">→</span></button>
           </div>
         </article>
       </div>
@@ -149,6 +151,11 @@
             <div class="sc-segment">
               <label><input type="radio" name="type" value="worship" /><span><b>학교 안 모임 예배</b><small>이미 기도모임이 있어요</small></span></label>
               <label><input type="radio" name="type" value="gate" /><span><b>학교 정문 앞 기도</b><small>기도모임을 시작하고 싶어요</small></span></label>
+            </div>
+            <div class="sc-teacher hidden" id="teacherBox">
+              <p>학교 안 모임 예배는 <b>학교 스쿨처치 담당 선생님과 먼저 이야기를 마친 뒤</b> 신청해 주세요. 장소와 시간도 선생님과 정한 내용으로 적어 주세요.</p>
+              <label class="sc-check"><input type="checkbox" id="teacherOk" name="teacherOk" /><span>담당 선생님과 이야기를 마쳤어요</span></label>
+              <p class="sc-error" id="err-teacher" aria-live="polite"></p>
             </div>
             <p class="sc-error" id="err-type" aria-live="polite"></p>
           </fieldset>
