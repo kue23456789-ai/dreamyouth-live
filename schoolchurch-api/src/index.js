@@ -36,7 +36,7 @@ function allowedOrigin(origin, env) {
 
 function cors(origin, env) {
   const h = {
-    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
@@ -184,7 +184,8 @@ async function safeEqual(a, b, secret) {
 }
 
 async function issueToken(env) {
-  const payload = b64url(enc.encode(JSON.stringify({ sub: "admin", exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SEC })));
+  const pv = await passwordVersion(env);
+  const payload = b64url(enc.encode(JSON.stringify({ sub: "admin", pv, exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SEC })));
   const sig = b64url(await hmac(env.SESSION_SECRET, payload));
   return `${payload}.${sig}`;
 }
@@ -198,7 +199,7 @@ async function verifyToken(request, env) {
   if (!(await safeEqual(sig, expected, env.SESSION_SECRET))) return false;
   try {
     const data = JSON.parse(b64urlDecode(payload));
-    return data.sub === "admin" && data.exp > Date.now() / 1000;
+    return data.sub === "admin" && data.exp > Date.now() / 1000 && data.pv === (await passwordVersion(env));
   } catch {
     return false;
   }
@@ -273,6 +274,11 @@ async function createApplication(request, ctx) {
   // 봇 차단용 숨은 입력칸
   if (body.website) return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
 
+  const closed = await ctx.env.DB.prepare("SELECT value FROM site_content WHERE key = 'apply.open'").first();
+  if (closed && closed.value === "off") {
+    return json({ ok: false, error: "지금은 신청을 받지 않고 있어요." }, 403, ctx);
+  }
+
   const key = clean(body.idempotencyKey, 64);
   if (!/^[A-Za-z0-9-]{16,64}$/.test(key)) return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
 
@@ -298,6 +304,193 @@ async function createApplication(request, ctx) {
   return json({ ok: true, application: toPublic(row) }, 201, ctx);
 }
 
+/* ---------- 관리자 비밀번호 (화면에서 바꾼 값이 있으면 그것을 사용) ---------- */
+
+function toHex(buf) {
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+function fromHex(hex) {
+  return new Uint8Array(hex.match(/../g).map((h) => parseInt(h, 16)));
+}
+async function pbkdf2(password, saltHex) {
+  const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: fromHex(saltHex), iterations: 100000 },
+    key,
+    256,
+  );
+  return toHex(bits);
+}
+async function storedAuth(env) {
+  return env.DB.prepare("SELECT salt, hash FROM admin_auth WHERE id = 1").first();
+}
+async function checkPassword(env, password) {
+  const row = await storedAuth(env);
+  if (row) return safeEqual(await pbkdf2(password, row.salt), row.hash, env.SESSION_SECRET);
+  return safeEqual(password, env.ADMIN_PASSWORD, env.SESSION_SECRET);
+}
+/** 비밀번호가 바뀌면 이전 로그인 토큰이 모두 무효가 되도록 */
+async function passwordVersion(env) {
+  const row = await storedAuth(env);
+  return row ? row.hash.slice(0, 12) : "env";
+}
+
+async function changePassword(request, ctx) {
+  const { env } = ctx;
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {}
+  if (!(await checkPassword(env, body.current || ""))) {
+    return json({ ok: false, error: "지금 비밀번호가 맞지 않아요.", fields: { current: "지금 비밀번호가 맞지 않아요." } }, 422, ctx);
+  }
+  const next = String(body.next || "");
+  if (next.length < 8 || next.length > 64) {
+    return json({ ok: false, error: "새 비밀번호는 8~64자로 정해 주세요.", fields: { next: "8~64자로 정해 주세요." } }, 422, ctx);
+  }
+  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+  const hash = await pbkdf2(next, salt);
+  await env.DB.prepare(
+    `INSERT INTO admin_auth (id, salt, hash, updated_at) VALUES (1, ?1, ?2, datetime('now'))
+     ON CONFLICT(id) DO UPDATE SET salt = excluded.salt, hash = excluded.hash, updated_at = excluded.updated_at`,
+  )
+    .bind(salt, hash)
+    .run();
+  return json({ ok: true, token: await issueToken(env), expiresIn: TOKEN_TTL_SEC }, 200, ctx);
+}
+
+/* ---------- 사이트 문구·설정 ---------- */
+
+const CONTENT_KEY = /^[a-z][a-zA-Z0-9]*(\.[a-zA-Z0-9]+){0,3}$/;
+const IMAGE_KEYS = ["hero", "classroom", "gate"];
+const MAX_IMAGE_BYTES = 1_500_000;
+
+async function readContent(env) {
+  const { results } = await env.DB.prepare("SELECT key, value FROM site_content").all();
+  const content = {};
+  for (const r of results) content[r.key] = r.value;
+  return content;
+}
+
+async function getContent(ctx) {
+  const env = ctx.env;
+  const content = await readContent(env);
+  const { results } = await env.DB.prepare("SELECT key, updated_at FROM site_images").all();
+  const images = {};
+  for (const r of results) images[r.key] = `/api/images/${r.key}?v=${encodeURIComponent(r.updated_at)}`;
+  return new Response(JSON.stringify({ ok: true, content, images }), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-cache",
+      ...cors(ctx.origin, env),
+    },
+  });
+}
+
+async function saveContent(request, ctx) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
+  }
+  const set = body && typeof body.set === "object" ? body.set : {};
+  const reset = Array.isArray(body?.reset) ? body.reset : [];
+  const stmts = [];
+  for (const [k, v] of Object.entries(set)) {
+    if (!CONTENT_KEY.test(k) || typeof v !== "string" || v.length > 1000) {
+      return json({ ok: false, error: `저장할 수 없는 항목이에요: ${k}` }, 422, ctx);
+    }
+    stmts.push(
+      ctx.env.DB.prepare(
+        `INSERT INTO site_content (key, value, updated_at) VALUES (?1, ?2, datetime('now'))
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+      ).bind(k, v),
+    );
+  }
+  for (const k of reset) {
+    if (typeof k === "string" && CONTENT_KEY.test(k)) stmts.push(ctx.env.DB.prepare("DELETE FROM site_content WHERE key = ?1").bind(k));
+  }
+  if (stmts.length > 200) return json({ ok: false, error: "한 번에 너무 많은 항목이에요." }, 422, ctx);
+  if (stmts.length) await ctx.env.DB.batch(stmts);
+  return json({ ok: true, content: await readContent(ctx.env) }, 200, ctx);
+}
+
+async function getImage(key, ctx) {
+  const row = await ctx.env.DB.prepare("SELECT mime, data, updated_at FROM site_images WHERE key = ?1").bind(key).first();
+  if (!row) return new Response("Not found", { status: 404, headers: cors(ctx.origin, ctx.env) });
+  return new Response(new Uint8Array(row.data), {
+    status: 200,
+    headers: { "Content-Type": row.mime, "Cache-Control": "public, max-age=31536000, immutable", ...cors(ctx.origin, ctx.env) },
+  });
+}
+
+async function uploadImage(request, key, ctx) {
+  const mime = (request.headers.get("Content-Type") || "").split(";")[0].trim();
+  if (!["image/jpeg", "image/webp", "image/png"].includes(mime)) {
+    return json({ ok: false, error: "JPG, PNG, WEBP 사진만 올릴 수 있어요." }, 415, ctx);
+  }
+  const buf = await request.arrayBuffer();
+  if (!buf.byteLength) return json({ ok: false, error: "사진이 비어 있어요." }, 400, ctx);
+  if (buf.byteLength > MAX_IMAGE_BYTES) return json({ ok: false, error: "사진이 너무 커요. (1.5MB 이하)" }, 413, ctx);
+  await ctx.env.DB.prepare(
+    `INSERT INTO site_images (key, mime, data, updated_at) VALUES (?1, ?2, ?3, datetime('now'))
+     ON CONFLICT(key) DO UPDATE SET mime = excluded.mime, data = excluded.data, updated_at = excluded.updated_at`,
+  )
+    .bind(key, mime, buf)
+    .run();
+  return json({ ok: true }, 200, ctx);
+}
+
+/* ---------- 관리자: 일정 직접 추가·삭제 ---------- */
+
+async function adminCreateApplication(request, ctx) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ ok: false, error: "요청을 처리할 수 없어요." }, 400, ctx);
+  }
+  // 전도사님이 전화 등으로 받은 일정: 이름·연락처는 선택, 선생님 확인·날짜 제한 없음
+  const v = {
+    type: clean(body.type, 20),
+    school: clean(body.school, 40),
+    name: clean(body.name, 30),
+    phone: clean(body.phone, 20),
+    date: clean(body.date, 10),
+    time: clean(body.time, 5),
+    slot: clean(body.slot || "lunch", 10),
+    place: clean(body.place, 80),
+    status: STATUSES.includes(body.status) ? body.status : "confirmed",
+  };
+  const errors = {};
+  if (!TYPES[v.type]) errors.type = "만남 유형을 골라 주세요.";
+  if (!v.school || v.school.length > 40) errors.school = "학교 이름을 적어 주세요.";
+  if (!isValidDate(v.date)) errors.date = "날짜를 골라 주세요.";
+  if (!isValidTime(v.time)) errors.time = "시간을 골라 주세요.";
+  if (!SLOTS[v.slot]) errors.time = "시간 기준을 골라 주세요.";
+  if (!v.place || v.place.length > 80) errors.place = "장소를 적어 주세요.";
+  if (v.phone && !normalizePhone(v.phone)) errors.phone = "휴대폰 번호를 다시 확인해 주세요.";
+  if (Object.keys(errors).length) return json({ ok: false, error: "빠졌거나 잘못 적은 칸이 있어요.", fields: errors }, 422, ctx);
+  const key = `admin-${crypto.randomUUID()}`;
+  await ctx.env.DB.prepare(
+    `INSERT INTO applications
+      (idempotency_key, meeting_type, school, applicant_name, phone, visit_date, visit_time, place, time_slot, status)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`,
+  )
+    .bind(key, v.type, v.school, v.name, v.phone ? normalizePhone(v.phone) : "", v.date, v.time, v.place, v.slot, v.status)
+    .run();
+  const row = await ctx.env.DB.prepare("SELECT * FROM applications WHERE idempotency_key = ?1").bind(key).first();
+  return json({ ok: true, application: toAdmin(row) }, 201, ctx);
+}
+
+async function deleteApplication(id, ctx) {
+  const res = await ctx.env.DB.prepare("DELETE FROM applications WHERE id = ?1").bind(id).run();
+  if (!res.meta || res.meta.changes === 0) return json({ ok: false, error: "신청을 찾을 수 없어요." }, 404, ctx);
+  return json({ ok: true }, 200, ctx);
+}
+
 async function adminLogin(request, ctx) {
   const { env } = ctx;
   if (!env.ADMIN_PASSWORD || !env.SESSION_SECRET) {
@@ -315,7 +508,7 @@ async function adminLogin(request, ctx) {
   try {
     body = await request.json();
   } catch {}
-  const ok = await safeEqual(body.password || "", env.ADMIN_PASSWORD, env.SESSION_SECRET);
+  const ok = await checkPassword(env, body.password || "");
   if (!ok) {
     await env.DB.prepare("INSERT INTO login_failures (ip, ts) VALUES (?1, ?2)").bind(ip, now).run();
     return json({ ok: false, error: "비밀번호가 올바르지 않아요." }, 401, ctx);
@@ -353,6 +546,29 @@ async function updateApplication(request, id, ctx) {
   if (body.time !== undefined) {
     if (!isValidTime(body.time)) fields.time = "오전 6시부터 밤 11시 전까지의 시간으로 적어 주세요.";
     else (sets.push("visit_time = ?"), binds.push(body.time));
+  }
+  if (body.slot !== undefined) {
+    if (!SLOTS[body.slot]) fields.time = "시간 기준을 골라 주세요.";
+    else (sets.push("time_slot = ?"), binds.push(body.slot));
+  }
+  if (body.school !== undefined) {
+    const sc = clean(body.school, 40);
+    if (!sc || sc.length > 40) fields.school = "학교 이름을 1~40자로 적어 주세요.";
+    else (sets.push("school = ?"), binds.push(sc));
+  }
+  if (body.type !== undefined) {
+    if (!TYPES[body.type]) fields.type = "만남 유형을 골라 주세요.";
+    else (sets.push("meeting_type = ?"), binds.push(body.type));
+  }
+  if (body.name !== undefined) {
+    const nm = clean(body.name, 30);
+    if (nm.length > 30) fields.name = "이름은 30자 안으로 적어 주세요.";
+    else (sets.push("applicant_name = ?"), binds.push(nm));
+  }
+  if (body.phone !== undefined) {
+    const ph = clean(body.phone, 20);
+    if (ph && !normalizePhone(ph)) fields.phone = "휴대폰 번호를 다시 확인해 주세요.";
+    else (sets.push("phone = ?"), binds.push(ph ? normalizePhone(ph) : ""));
   }
   if (body.place !== undefined) {
     const p = clean(body.place, 80);
@@ -395,6 +611,9 @@ export default {
 
     try {
       if (path === "/api/schedule" && request.method === "GET") return await getSchedule(url, ctx);
+      if (path === "/api/content" && request.method === "GET") return await getContent(ctx);
+      const img = path.match(/^\/api\/images\/([a-z]+)$/);
+      if (img && request.method === "GET" && IMAGE_KEYS.includes(img[1])) return await getImage(img[1], ctx);
       if (path === "/api/applications" && request.method === "POST") return await createApplication(request, ctx);
       if (path === "/api/admin/login" && request.method === "POST") return await adminLogin(request, ctx);
 
@@ -405,6 +624,18 @@ export default {
         if (path === "/api/admin/applications" && request.method === "GET") return await listApplications(url, ctx);
         const m = path.match(/^\/api\/admin\/applications\/(\d+)$/);
         if (m && request.method === "PATCH") return await updateApplication(request, Number(m[1]), ctx);
+        if (m && request.method === "DELETE") return await deleteApplication(Number(m[1]), ctx);
+        if (path === "/api/admin/applications" && request.method === "POST") return await adminCreateApplication(request, ctx);
+        if (path === "/api/admin/content" && request.method === "PUT") return await saveContent(request, ctx);
+        if (path === "/api/admin/password" && request.method === "POST") return await changePassword(request, ctx);
+        const ai = path.match(/^\/api\/admin\/images\/([a-z]+)$/);
+        if (ai && IMAGE_KEYS.includes(ai[1])) {
+          if (request.method === "PUT") return await uploadImage(request, ai[1], ctx);
+          if (request.method === "DELETE") {
+            await env.DB.prepare("DELETE FROM site_images WHERE key = ?1").bind(ai[1]).run();
+            return json({ ok: true }, 200, ctx);
+          }
+        }
       }
       return json({ ok: false, error: "Not found" }, 404, ctx);
     } catch (err) {
