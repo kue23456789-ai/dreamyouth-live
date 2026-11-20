@@ -34,12 +34,22 @@ assert.equal(r.body.application.status, "pending");
 assert.equal(r.body.application.phone, undefined);
 const again = await call("/api/applications", { method: "POST", body: JSON.stringify(payload) });
 assert.equal(again.body.application.id, id);
+assert.equal(r.body.application.slot, "lunch");
+
+// 2-1. 동아리·모임 시간 기준 저장
+const clubKey = key + "c";
+r = await call("/api/applications", { method: "POST", body: JSON.stringify({ ...payload, slot: "club", time: "16:30", idempotencyKey: clubKey }) });
+assert.equal(r.status, 201);
+assert.equal(r.body.application.slot, "club");
+const clubId = r.body.application.id;
+r = await call("/api/applications", { method: "POST", body: JSON.stringify({ ...payload, slot: "weird", idempotencyKey: key + "s" }) });
+assert.equal(r.status, 422);
 
 // 3. 공개 달력에는 개인정보가 없음
 r = await call(`/api/schedule?month=${date.slice(0, 7)}`);
 const ev = r.body.events.find((e) => e.id === id);
 assert.ok(ev, "공개 달력에 표시");
-assert.deepEqual(Object.keys(ev).sort(), ["date", "id", "school", "status", "time", "type", "typeLabel"].sort());
+assert.deepEqual(Object.keys(ev).sort(), ["date", "id", "school", "slot", "slotLabel", "status", "time", "type", "typeLabel"].sort());
 assert.ok(!JSON.stringify(r.body).includes("01012345678") && !JSON.stringify(r.body).includes("홍길동"));
 
 // 4. 관리자 권한은 서버에서 확인
@@ -68,6 +78,9 @@ assert.equal(ev2.status, "confirmed");
 await call(`/api/admin/applications/${id}`, { method: "PATCH", headers: auth, body: JSON.stringify({ status: "cancelled" }) });
 r = await call(`/api/schedule?month=${moved.slice(0, 7)}`);
 assert.ok(!r.body.events.some((e) => e.id === id));
+
+// 정리: 동아리 시간 테스트 신청 취소
+await call(`/api/admin/applications/${clubId}`, { method: "PATCH", headers: auth, body: JSON.stringify({ status: "cancelled" }) });
 
 // 7. 허용되지 않은 출처 차단
 const bad = await fetch(BASE + "/api/schedule", { headers: { Origin: "https://evil.example" } });

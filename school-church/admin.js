@@ -108,7 +108,7 @@
     k("statusLabel").textContent = STATUS_LABEL[a.status];
     k("statusLabel").classList.add(a.status);
     k("school").textContent = a.school;
-    k("typeLabel").textContent = `${a.type === "gate" ? "학교 정문 앞 기도" : "학교 안 모임 예배"} · ${fmtDate(a.date)} ${a.time}`;
+    k("typeLabel").textContent = `${a.type === "gate" ? "학교 정문 앞 기도" : "학교 안 모임 예배"} · ${fmtDate(a.date)} ${a.time} (${a.slotLabel || "점심시간"})`;
     k("created").textContent = `${fmtCreated(a.createdAt)} 접수`;
     k("name").textContent = a.name;
     k("phone").textContent = a.phone;
