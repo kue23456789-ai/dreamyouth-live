@@ -10,6 +10,7 @@
   <meta name="sc-api-base" content="https://dreamyouth-schoolchurch.kue23456789.workers.dev" />
   <!-- 신청 후 문자로 알릴 담당자 번호 -->
   <meta name="sc-contact-phone" content="010-8953-2069" />
+  <meta name="sc-contact-name" content="권규호 전도사" />
 
   <link rel="preload" href="school-church/fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="school-church/school-church.css" />
@@ -178,8 +179,14 @@
             <p class="sc-error" id="err-date" aria-live="polite"></p>
           </div>
           <div class="sc-field">
-            <label class="sc-label" for="time">희망 시간 <em aria-hidden="true">*</em></label>
-            <select id="time" name="time" required aria-describedby="err-time"><option value="">시간 선택</option></select>
+            <div class="sc-label-row">
+              <label class="sc-label" for="time">희망 시간 <em aria-hidden="true">*</em></label>
+              <div class="sc-slot" role="radiogroup" aria-label="시간 기준">
+                <label><input type="radio" name="slot" value="lunch" checked /><span>점심시간</span></label>
+                <label><input type="radio" name="slot" value="club" /><span>동아리·모임 시간</span></label>
+              </div>
+            </div>
+            <select id="time" name="time" required aria-describedby="err-time"><option value="">점심시간 중 만날 시각</option></select>
             <p class="sc-error" id="err-time" aria-live="polite"></p>
           </div>
           <div class="sc-field">
@@ -231,9 +238,13 @@
       <p class="sc-dialog-icon" aria-hidden="true">✉️</p>
       <h3 id="smsTitle">담당자에게 문자를 보내시겠어요?</h3>
       <p>담당자가 신청 내용을 확인할 수 있지만, 문자로 알려 주시면 더 빠르게 확인해 드릴 수 있어요.</p>
-      <p class="sc-dialog-sub" id="smsHow">‘문자 보내기’를 누르면 문자 앱이 열리고 신청 내용이 미리 채워져 있어요. 전송만 누르면 돼요.</p>
+      <div class="sc-dialog-sub" id="smsHow">
+        <p class="sc-dialog-to"><span id="smsToName"></span> <span id="smsToPhone"></span></p>
+        <p>‘문자 보내기’를 누르면 문자 앱이 열리고 신청 내용이 미리 채워져 있어요. 전송만 누르면 돼요.</p>
+      </div>
       <div class="sc-dialog-pc hidden" id="smsPc">
         <p>휴대폰에서 아래 번호로 문자를 보내 주세요.</p>
+        <p class="sc-dialog-name" id="smsName"></p>
         <p class="sc-dialog-phone" id="smsPhone"></p>
         <pre class="sc-dialog-msg" id="smsBody"></pre>
       </div>

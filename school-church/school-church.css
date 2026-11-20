@@ -357,6 +357,14 @@ button.sc-cal-cell:hover { background: #fafaf8; }
 .sc-check { display: flex; align-items: center; gap: 10px; margin-top: 10px; cursor: pointer; font-size: 15px; font-weight: 580; color: var(--ink); }
 .sc-check input { width: 20px; height: 20px; margin: 0; accent-color: var(--ink); flex: none; }
 .sc-teacher.has-error { border-color: var(--danger); }
+.sc-label-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.sc-label-row .sc-label { margin-bottom: 0; }
+.sc-slot { display: inline-flex; padding: 2px; border-radius: 999px; background: #efefec; }
+.sc-slot label { position: relative; cursor: pointer; }
+.sc-slot input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.sc-slot span { display: block; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 560; color: var(--muted); white-space: nowrap; line-height: 1.5; }
+.sc-slot input:checked + span { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.sc-slot input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 1px; }
 .sc-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 .sc-submit { margin-top: 8px; }
@@ -387,6 +395,12 @@ button.sc-cal-cell:hover { background: #fafaf8; }
 .sc-dialog .sc-dialog-sub { margin-top: 8px; font-size: 13.5px; color: var(--muted); }
 .sc-dialog-pc { margin-top: 14px; padding: 14px; border-radius: 10px; background: var(--soft); text-align: left; }
 .sc-dialog-pc p { font-size: 13.5px; }
+.sc-dialog-name { margin-top: 8px; font-size: 14px !important; font-weight: 620; color: var(--ink) !important; }
+.sc-dialog-name + .sc-dialog-phone { margin-top: 0; }
+.sc-dialog-to { margin: 2px 0 6px; padding: 10px 12px; border-radius: 10px; background: var(--soft); color: var(--ink) !important; font-size: 15px !important; }
+.sc-dialog-to span:first-child { font-weight: 640; }
+.sc-dialog-to span:last-child { font-variant-numeric: tabular-nums; color: var(--ink-2); margin-left: 4px; }
+.sc-dialog .sc-dialog-sub p { font-size: 13.5px; color: var(--muted); }
 .sc-dialog-phone { margin-top: 4px; font-size: 18px !important; font-weight: 680; color: var(--ink) !important; font-variant-numeric: tabular-nums; }
 .sc-dialog-msg { margin: 8px 0 0; white-space: pre-wrap; font: inherit; font-size: 13px; color: var(--ink-2); }
 .sc-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }

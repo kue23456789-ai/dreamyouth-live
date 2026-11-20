@@ -98,13 +98,16 @@ function normalizePhone(v) {
 
 /* ---------- 공개 응답: 개인정보를 SELECT 단계에서 제외 ---------- */
 
-const PUBLIC_COLUMNS = "id, visit_date, visit_time, school, meeting_type, status";
+const PUBLIC_COLUMNS = "id, visit_date, visit_time, time_slot, school, meeting_type, status";
+const SLOTS = { lunch: "점심시간", club: "동아리·모임 시간" };
 
 function toPublic(row) {
   return {
     id: row.id,
     date: row.visit_date,
     time: row.visit_time,
+    slot: row.time_slot || "lunch",
+    slotLabel: SLOTS[row.time_slot] || SLOTS.lunch,
     school: row.school,
     type: row.meeting_type,
     typeLabel: TYPES[row.meeting_type],
@@ -235,6 +238,7 @@ function validateApplication(body) {
     phoneRaw: clean(body.phone, 20),
     date: clean(body.date, 10),
     time: clean(body.time, 5),
+    slot: clean(body.slot || "lunch", 10),
     place: clean(body.place, 80),
   };
   if (!TYPES[v.type]) errors.type = "만남 유형을 골라 주세요.";
@@ -252,6 +256,7 @@ function validateApplication(body) {
   else if (v.date > addDays(today, 366)) errors.date = "1년 안의 날짜로 골라 주세요.";
   if (!v.time) errors.time = "시간을 골라 주세요.";
   else if (!isValidTime(v.time)) errors.time = "오전 6시부터 밤 11시 전까지의 시간으로 골라 주세요.";
+  if (!SLOTS[v.slot]) errors.time = "점심시간인지 동아리·모임 시간인지 골라 주세요.";
   if (!v.place) errors.place = "만날 장소를 적어 주세요.";
   else if (v.place.length > 80) errors.place = "장소는 80자 안으로 적어 주세요.";
   if (v.type === "worship" && body.teacherOk !== true) errors.teacher = "담당 선생님과 이야기를 마친 뒤 체크해 주세요.";
@@ -281,11 +286,11 @@ async function createApplication(request, ctx) {
   await db
     .prepare(
       `INSERT INTO applications
-        (idempotency_key, meeting_type, school, applicant_name, phone, visit_date, visit_time, place)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+        (idempotency_key, meeting_type, school, applicant_name, phone, visit_date, visit_time, place, time_slot)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
        ON CONFLICT(idempotency_key) DO NOTHING`,
     )
-    .bind(key, v.type, v.school, v.name, v.phone, v.date, v.time, v.place)
+    .bind(key, v.type, v.school, v.name, v.phone, v.date, v.time, v.place, v.slot)
     .run();
 
   const row = await db.prepare(`SELECT ${PUBLIC_COLUMNS} FROM applications WHERE idempotency_key = ?1`).bind(key).first();

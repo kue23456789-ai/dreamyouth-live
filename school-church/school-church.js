@@ -16,6 +16,7 @@
   const STATUS_LABEL = { pending: "조율 중", confirmed: "방문 확정", cancelled: "취소" };
   const GATE_PLACE = "학교 정문 앞";
   const CONTACT_PHONE = document.querySelector('meta[name="sc-contact-phone"]')?.content || "";
+  const CONTACT_NAME = document.querySelector('meta[name="sc-contact-name"]')?.content || "";
   const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -257,11 +258,30 @@
     const max = new Date(Date.UTC(t0.y + 1, t0.m - 1, t0.d));
     f.date.max = max.toISOString().slice(0, 10);
   }
-  // 희망 시간: 07:00 ~ 20:00, 10분 단위
-  for (let m = 7 * 60; m <= 20 * 60; m += 10) {
-    const v = `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
-    f.time.add(new Option(v, v));
+  // 희망 시간: 점심시간(11:00~14:00) 또는 동아리·모임 시간(07:00~20:00), 10분 단위
+  const SLOT = {
+    lunch: { label: "점심시간", from: 11 * 60, to: 14 * 60, placeholder: "점심시간 중 만날 시각" },
+    club: { label: "동아리·모임 시간", from: 7 * 60, to: 20 * 60, placeholder: "모임이 시작하는 시각" },
+  };
+  const slotValue = () => form.querySelector('input[name="slot"]:checked')?.value || "lunch";
+  function fillTimes() {
+    const s = SLOT[slotValue()];
+    const keep = f.time.value;
+    f.time.length = 0;
+    f.time.add(new Option(s.placeholder, ""));
+    for (let m = s.from; m <= s.to; m += 10) {
+      const v = `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+      f.time.add(new Option(v, v));
+    }
+    // 새 범위에 있으면 고른 시간 유지
+    f.time.value = [...f.time.options].some((o) => o.value === keep) ? keep : "";
   }
+  fillTimes();
+  form.querySelectorAll('input[name="slot"]').forEach((r) => r.addEventListener("change", () => {
+    fillTimes();
+    idemKey = null;
+    if (f.time.value) clearError("time");
+  }));
 
   function setPickedDateBanner() {
     const el = $("#pickedDate");
@@ -365,6 +385,7 @@
       phone: f.phone.value.trim(),
       date: f.date.value,
       time: f.time.value,
+      slot: slotValue(),
       place: f.place.value.trim(),
       teacherOk: teacherOk.checked,
       website: form.website.value,
@@ -504,7 +525,7 @@
     return [
       "[스쿨처치 방문 신청]",
       `${app.school} · ${TYPE_LABEL[app.type]}`,
-      `${formatDate(app.date)} ${app.time}`,
+      `${formatDate(app.date)} ${app.time} (${SLOT[app.slot]?.label || "점심시간"})`,
       `장소: ${v.place}`,
       `신청자: ${v.name} (${v.phone})`,
     ].join("\n");
@@ -518,6 +539,10 @@
     $("#smsHow").classList.toggle("hidden", !isPhone);
     $("#smsPc").classList.toggle("hidden", isPhone);
     $("#smsPhone").textContent = CONTACT_PHONE;
+    $("#smsName").textContent = CONTACT_NAME;
+    $("#smsName").classList.toggle("hidden", !CONTACT_NAME);
+    $("#smsToName").textContent = CONTACT_NAME;
+    $("#smsToPhone").textContent = CONTACT_PHONE;
     $("#smsBody").textContent = smsText;
     const send = $("#smsSend");
     send.textContent = isPhone ? "문자 보내기" : "내용 복사하기";
@@ -548,7 +573,7 @@
     $(".sc-sms").classList.toggle("hidden", !CONTACT_PHONE || !smsText);
     $("#doneSchool").textContent = app.school;
     $("#doneDate").textContent = formatDate(app.date, true);
-    $("#doneTime").textContent = app.time;
+    $("#doneTime").textContent = `${app.time} · ${SLOT[app.slot]?.label || "점심시간"}`;
     $("#doneType").textContent = TYPE_LABEL[app.type];
     form.classList.add("hidden");
     const done = $("#doneView");
@@ -576,6 +601,7 @@
 
   $("#newApply").addEventListener("click", () => {
     form.reset();
+    fillTimes();
     syncTeacherBox();
     placeAuto = false;
     idemKey = null;
