@@ -371,6 +371,27 @@ button.sc-cal-cell:hover { background: #fafaf8; }
 .sc-done-list div { display: grid; grid-template-columns: 72px 1fr; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--line); }
 .sc-done-list dt { color: var(--muted); font-size: 14px; }
 .sc-done-list dd { margin: 0; font-weight: 580; }
+.sc-sms { margin: 0 0 18px; padding: 16px 18px; border-radius: 12px; background: var(--soft); border: 1px solid var(--line); }
+.sc-sms p { font-size: 14px; color: var(--ink-2); margin-bottom: 12px; }
+.sc-sms b { color: var(--ink); font-weight: 640; }
+
+.sc-dialog {
+  width: min(420px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 18px;
+  background: #fff; color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.25);
+}
+.sc-dialog::backdrop { background: rgba(0,0,0,.45); }
+.sc-dialog form { padding: 26px 24px 20px; text-align: center; }
+.sc-dialog-icon { font-size: 30px; line-height: 1; margin-bottom: 10px; }
+.sc-dialog h3 { font-size: 20px; font-weight: 680; letter-spacing: -0.03em; margin-bottom: 10px; }
+.sc-dialog p { font-size: 15px; color: var(--ink-2); }
+.sc-dialog .sc-dialog-sub { margin-top: 8px; font-size: 13.5px; color: var(--muted); }
+.sc-dialog-pc { margin-top: 14px; padding: 14px; border-radius: 10px; background: var(--soft); text-align: left; }
+.sc-dialog-pc p { font-size: 13.5px; }
+.sc-dialog-phone { margin-top: 4px; font-size: 18px !important; font-weight: 680; color: var(--ink) !important; font-variant-numeric: tabular-nums; }
+.sc-dialog-msg { margin: 8px 0 0; white-space: pre-wrap; font: inherit; font-size: 13px; color: var(--ink-2); }
+.sc-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }
+.sc-dialog-actions .sc-btn { width: 100%; border-radius: 12px; }
+
 .sc-done-note { margin: 16px 0 18px; color: var(--ink-2); font-size: 14px; }
 
 /* ---------- 푸터 ---------- */

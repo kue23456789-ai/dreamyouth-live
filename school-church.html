@@ -8,6 +8,8 @@
   <meta name="description" content="학교에서도, 우리는 교회입니다. 드림유스 전도사님이 우리 학교로 찾아가 함께 예배하고 기도해요." />
   <!-- 운영 API 주소: Worker 배포 후 실제 주소로 바꿔주세요. localhost에서는 자동으로 http://localhost:8787 을 사용합니다. -->
   <meta name="sc-api-base" content="https://dreamyouth-schoolchurch.kue23456789.workers.dev" />
+  <!-- 신청 후 문자로 알릴 담당자 번호 -->
+  <meta name="sc-contact-phone" content="010-8953-2069" />
 
   <link rel="preload" href="school-church/fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="school-church/school-church.css" />
@@ -213,11 +215,34 @@
             <div><dt>상태</dt><dd><span class="sc-status pending">조율 중</span></dd></div>
           </dl>
           <p class="sc-done-note">담당자가 연락해 방문 일정을 확정합니다. 일정이 확정되면 달력에도 ‘방문 확정’으로 표시됩니다.</p>
+          <div class="sc-sms">
+            <p><b>문자로도 알려 주세요.</b> 담당자가 신청 내용을 확인할 수 있지만, 문자를 보내 주시면 더 빠르게 확인해 드릴 수 있어요.</p>
+            <button type="button" class="sc-btn sc-btn-dark" id="smsOpen">담당자에게 문자 보내기 <span aria-hidden="true">→</span></button>
+          </div>
           <button type="button" class="sc-btn sc-btn-outline" id="newApply">한 번 더 신청하기</button>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- 접수 후 문자 안내 -->
+  <dialog class="sc-dialog" id="smsDialog" aria-labelledby="smsTitle">
+    <form method="dialog">
+      <p class="sc-dialog-icon" aria-hidden="true">✉️</p>
+      <h3 id="smsTitle">담당자에게 문자를 보내시겠어요?</h3>
+      <p>담당자가 신청 내용을 확인할 수 있지만, 문자로 알려 주시면 더 빠르게 확인해 드릴 수 있어요.</p>
+      <p class="sc-dialog-sub" id="smsHow">‘문자 보내기’를 누르면 문자 앱이 열리고 신청 내용이 미리 채워져 있어요. 전송만 누르면 돼요.</p>
+      <div class="sc-dialog-pc hidden" id="smsPc">
+        <p>휴대폰에서 아래 번호로 문자를 보내 주세요.</p>
+        <p class="sc-dialog-phone" id="smsPhone"></p>
+        <pre class="sc-dialog-msg" id="smsBody"></pre>
+      </div>
+      <div class="sc-dialog-actions">
+        <button type="submit" value="later" class="sc-btn sc-btn-outline">괜찮아요</button>
+        <a class="sc-btn sc-btn-dark" id="smsSend" href="#">문자 보내기</a>
+      </div>
+    </form>
+  </dialog>
 
   <footer class="sc-footer">
     <p class="sc-footer-logo">DREAMYOUTH.</p>

@@ -15,6 +15,7 @@
   const TYPE_SHORT = { worship: "모임 예배", gate: "정문 기도" };
   const STATUS_LABEL = { pending: "조율 중", confirmed: "방문 확정", cancelled: "취소" };
   const GATE_PLACE = "학교 정문 앞";
+  const CONTACT_PHONE = document.querySelector('meta[name="sc-contact-phone"]')?.content || "";
   const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -467,7 +468,7 @@
       let data = {};
       try { data = await res.json(); } catch {}
       if (res.ok && data.ok && data.application) {
-        showDone(data.application);
+        showDone(data.application, v);
         idemKey = null;
         return;
       }
@@ -492,7 +493,59 @@
     }
   });
 
-  function showDone(app) {
+  /* ---------- 접수 후 담당자에게 문자 ---------- */
+
+  const isPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  const smsDialog = $("#smsDialog");
+  let smsText = "";
+
+  function buildSms(app, v) {
+    return [
+      "[스쿨처치 방문 신청]",
+      `${app.school} · ${TYPE_LABEL[app.type]}`,
+      `${formatDate(app.date)} ${app.time}`,
+      `장소: ${v.place}`,
+      `신청자: ${v.name} (${v.phone})`,
+    ].join("\n");
+  }
+  function smsHref() {
+    const num = CONTACT_PHONE.replace(/[^0-9]/g, "");
+    return `sms:${num}${isIOS ? "&" : "?"}body=${encodeURIComponent(smsText)}`;
+  }
+  function openSmsDialog() {
+    if (!CONTACT_PHONE || !smsText) return;
+    $("#smsHow").classList.toggle("hidden", !isPhone);
+    $("#smsPc").classList.toggle("hidden", isPhone);
+    $("#smsPhone").textContent = CONTACT_PHONE;
+    $("#smsBody").textContent = smsText;
+    const send = $("#smsSend");
+    send.textContent = isPhone ? "문자 보내기" : "내용 복사하기";
+    send.href = isPhone ? smsHref() : "#";
+    if (typeof smsDialog.showModal === "function") smsDialog.showModal();
+    else if (isPhone) location.href = smsHref();
+  }
+  $("#smsOpen").addEventListener("click", openSmsDialog);
+  $("#smsSend").addEventListener("click", async (e) => {
+    if (isPhone) {
+      // 링크(sms:)가 문자 앱을 열고, 창은 닫음
+      setTimeout(() => smsDialog.close("send"), 0);
+      return;
+    }
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(`${CONTACT_PHONE}\n${smsText}`);
+      $("#smsSend").textContent = "복사했어요 ✓";
+    } catch {
+      $("#smsSend").textContent = "직접 복사해 주세요";
+    }
+  });
+  // 바깥 영역을 누르면 닫기
+  smsDialog.addEventListener("click", (e) => { if (e.target === smsDialog) smsDialog.close("later"); });
+
+  function showDone(app, v) {
+    smsText = v ? buildSms(app, v) : "";
+    $(".sc-sms").classList.toggle("hidden", !CONTACT_PHONE || !smsText);
     $("#doneSchool").textContent = app.school;
     $("#doneDate").textContent = formatDate(app.date, true);
     $("#doneTime").textContent = app.time;
@@ -510,6 +563,9 @@
     state.selected = app.date;
     state.activeEvent = app.id;
     loadMonth();
+
+    // 접수 직후 문자 안내 창
+    setTimeout(openSmsDialog, 700);
   }
 
   function showForm() {
