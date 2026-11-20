@@ -293,7 +293,21 @@
     clearError("type");
     setPickedDateBanner();
   }
+  const teacherBox = $("#teacherBox");
+  const teacherOk = $("#teacherOk");
+  function syncTeacherBox() {
+    const show = f.type() === "worship";
+    teacherBox.classList.toggle("hidden", !show);
+    if (!show) clearTeacherError();
+  }
+  function clearTeacherError() {
+    teacherBox.classList.remove("has-error");
+    $("#err-teacher").textContent = "";
+  }
+  teacherOk.addEventListener("change", clearTeacherError);
+
   function syncPlaceWithType() {
+    syncTeacherBox();
     const type = f.type();
     if (type === "gate" && (!f.place.value.trim() || placeAuto)) {
       f.place.value = GATE_PLACE;
@@ -351,6 +365,7 @@
       date: f.date.value,
       time: f.time.value,
       place: f.place.value.trim(),
+      teacherOk: teacherOk.checked,
       website: form.website.value,
     };
   }
@@ -367,6 +382,7 @@
     else if (f.date.max && v.date > f.date.max) e.date = "1년 안의 날짜로 골라 주세요.";
     if (!v.time) e.time = "시간을 골라 주세요.";
     if (!v.place) e.place = "만날 장소를 적어 주세요.";
+    if (v.type === "worship" && !v.teacherOk) e.teacher = "담당 선생님과 이야기를 마친 뒤 체크해 주세요.";
     return e;
   }
 
@@ -386,8 +402,13 @@
     if (name !== "type") f[name].removeAttribute("aria-invalid");
   }
   function showErrors(errors) {
+    if (errors.teacher) {
+      teacherBox.classList.add("has-error");
+      $("#err-teacher").textContent = errors.teacher;
+    } else clearTeacherError();
     ["type", "school", "name", "date", "time", "place", "phone"].forEach((n) => (errors[n] ? showError(n, errors[n]) : clearError(n)));
     const first = ["type", "school", "name", "date", "time", "place", "phone"].find((n) => errors[n]);
+    if (!first && errors.teacher) teacherOk.focus();
     if (first) {
       const el = first === "type" ? form.querySelector('input[name="type"]') : f[first];
       el.focus();
@@ -499,6 +520,7 @@
 
   $("#newApply").addEventListener("click", () => {
     form.reset();
+    syncTeacherBox();
     placeAuto = false;
     idemKey = null;
     ["type", "school", "name", "date", "time", "place", "phone"].forEach(clearError);

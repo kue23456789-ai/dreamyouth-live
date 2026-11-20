@@ -254,6 +254,7 @@ function validateApplication(body) {
   else if (!isValidTime(v.time)) errors.time = "오전 6시부터 밤 11시 전까지의 시간으로 골라 주세요.";
   if (!v.place) errors.place = "만날 장소를 적어 주세요.";
   else if (v.place.length > 80) errors.place = "장소는 80자 안으로 적어 주세요.";
+  if (v.type === "worship" && body.teacherOk !== true) errors.teacher = "담당 선생님과 이야기를 마친 뒤 체크해 주세요.";
   return { v, errors };
 }
 
