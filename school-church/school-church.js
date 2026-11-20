@@ -15,8 +15,8 @@
   const TYPE_SHORT = { worship: "모임 예배", gate: "정문 기도" };
   const STATUS_LABEL = { pending: "조율 중", confirmed: "방문 확정", cancelled: "취소" };
   const GATE_PLACE = "학교 정문 앞";
-  const CONTACT_PHONE = document.querySelector('meta[name="sc-contact-phone"]')?.content || "";
-  const CONTACT_NAME = document.querySelector('meta[name="sc-contact-name"]')?.content || "";
+  let CONTACT_PHONE = document.querySelector('meta[name="sc-contact-phone"]')?.content || "";
+  let CONTACT_NAME = document.querySelector('meta[name="sc-contact-name"]')?.content || "";
   const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -611,7 +611,69 @@
     $("#schedule").scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
+  /* ---------- 관리자 화면에서 바꾼 문구·사진·설정 ---------- */
+
+  // 줄바꿈은 <br>, **굵게**는 <b>로 (HTML은 그대로 넣지 않음)
+  function renderRich(el, text) {
+    el.replaceChildren();
+    text.split("\n").forEach((line, i) => {
+      if (i) el.append(document.createElement("br"));
+      for (const part of line.split(/(\*\*[^*]+\*\*)/)) {
+        if (/^\*\*[^*]+\*\*$/.test(part)) {
+          const b = document.createElement("b");
+          b.textContent = part.slice(2, -2);
+          el.append(b);
+        } else if (part) el.append(part);
+      }
+    });
+  }
+  const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+  const toMin = (t) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
+
+  function applySettings(c) {
+    if (c["contact.phone"]) CONTACT_PHONE = c["contact.phone"];
+    if (c["contact.name"] !== undefined) CONTACT_NAME = c["contact.name"];
+    for (const slot of ["lunch", "club"]) {
+      const from = c[`time.${slot}From`], to = c[`time.${slot}To`];
+      if (TIME_RE.test(from || "") && TIME_RE.test(to || "") && toMin(from) < toMin(to)) {
+        SLOT[slot].from = toMin(from);
+        SLOT[slot].to = toMin(to);
+      }
+    }
+    fillTimes();
+    const closed = c["apply.open"] === "off";
+    $("#closedView").classList.toggle("hidden", !closed);
+    if (closed) {
+      form.classList.add("hidden");
+      $("#doneView").classList.add("hidden");
+    } else if ($("#doneView").classList.contains("hidden")) {
+      form.classList.remove("hidden");
+    }
+  }
+
+  async function loadContent() {
+    try {
+      const res = await fetch(`${API_BASE}/api/content`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) return;
+      const c = data.content || {};
+      document.querySelectorAll("[data-c]").forEach((el) => {
+        const v = c[el.dataset.c];
+        if (typeof v === "string" && v.trim()) renderRich(el, v);
+      });
+      for (const [k, u] of Object.entries(data.images || {})) {
+        document.documentElement.style.setProperty(`--img-${k}`, `url("${API_BASE}${u}")`);
+      }
+      applySettings(c);
+    } catch (err) {
+      console.warn("사이트 문구를 불러오지 못했어요. 기본 문구로 보여요.", err);
+    } finally {
+      document.documentElement.classList.remove("sc-content-loading");
+    }
+  }
+
   /* ---------- 시작 ---------- */
 
+  loadContent();
   loadMonth();
 })();
