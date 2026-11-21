@@ -121,6 +121,7 @@ function toAdmin(row) {
     name: row.applicant_name,
     phone: row.phone,
     place: row.place,
+    consentAt: row.consent_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -261,6 +262,7 @@ function validateApplication(body) {
   if (!v.place) errors.place = "만날 장소를 적어 주세요.";
   else if (v.place.length > 80) errors.place = "장소는 80자 안으로 적어 주세요.";
   if (v.type === "worship" && body.teacherOk !== true) errors.teacher = "담당 선생님과 이야기를 마친 뒤 체크해 주세요.";
+  if (body.consent !== true) errors.consent = "개인정보 수집·이용에 동의해야 신청할 수 있어요.";
   return { v, errors };
 }
 
@@ -292,8 +294,8 @@ async function createApplication(request, ctx) {
   await db
     .prepare(
       `INSERT INTO applications
-        (idempotency_key, meeting_type, school, applicant_name, phone, visit_date, visit_time, place, time_slot)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+        (idempotency_key, meeting_type, school, applicant_name, phone, visit_date, visit_time, place, time_slot, consent_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, datetime('now'))
        ON CONFLICT(idempotency_key) DO NOTHING`,
     )
     .bind(key, v.type, v.school, v.name, v.phone, v.date, v.time, v.place, v.slot)
@@ -593,7 +595,26 @@ async function updateApplication(request, id, ctx) {
 
 /* ---------- 라우터 ---------- */
 
+/* ---------- 매일 밤: 방문일로부터 30일 지난 신청의 이름·연락처 지우기 ---------- */
+
+const RETENTION_DAYS = 30;
+
+async function purgePersonalData(env) {
+  const cutoff = addDays(todayKST(), -RETENTION_DAYS);
+  const res = await env.DB.prepare(
+    `UPDATE applications SET applicant_name = '', phone = '', updated_at = datetime('now')
+     WHERE visit_date < ?1 AND (applicant_name <> '' OR phone <> '')`,
+  )
+    .bind(cutoff)
+    .run();
+  return res.meta?.changes || 0;
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(purgePersonalData(env).then((n) => console.log(`개인정보 정리: ${n}건`)));
+  },
+
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
     const ctx = { env, origin };
