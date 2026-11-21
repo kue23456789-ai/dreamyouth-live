@@ -5,7 +5,7 @@
   "scripts": {
     "db:local": "wrangler d1 migrations apply dreamyouth-schoolchurch --local",
     "db:remote": "wrangler d1 migrations apply dreamyouth-schoolchurch --remote",
-    "dev": "node -e \"require('fs').existsSync('.dev.vars')||require('fs').copyFileSync('.dev.vars.example','.dev.vars')\" && npm run db:local && wrangler dev --port 8787",
+    "dev": "node -e \"require('fs').existsSync('.dev.vars')||require('fs').copyFileSync('.dev.vars.example','.dev.vars')\" && npm run db:local && wrangler dev --port 8787 --test-scheduled",
     "site": "node scripts/serve-site.mjs",
     "test": "node scripts/smoke-test.mjs",
     "deploy": "wrangler deploy"

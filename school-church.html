@@ -210,6 +210,15 @@
           <!-- 봇 차단용 (사람에게는 보이지 않음) -->
           <div class="sc-hp" aria-hidden="true"><label>웹사이트<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
 
+          <div class="sc-field sc-field-full sc-consent" id="f-consent">
+            <label class="sc-check"><input type="checkbox" id="consentOk" name="consentOk" aria-describedby="err-consent" /><span data-c="consent.label">개인정보 수집·이용에 동의해요. (필수)</span></label>
+            <details class="sc-consent-more">
+              <summary>자세히 보기</summary>
+              <p data-c="consent.detail"><b>수집 항목</b> 이름, 휴대폰 번호, 학교명, 만날 장소<br /><b>이용 목적</b> 스쿨처치 방문 일정 조율과 연락<br /><b>보관 기간</b> 방문일로부터 30일이 지나면 이름과 연락처를 지워요.<br />동의하지 않을 수 있지만, 동의하지 않으면 신청할 수 없어요. 만 14세 미만은 보호자의 동의를 받은 뒤 신청해 주세요.</p>
+            </details>
+            <p class="sc-error" id="err-consent" aria-live="polite"></p>
+          </div>
+
           <div class="sc-field-full sc-submit">
             <p class="sc-submit-note" data-c="apply.submitNote">신청 후 담당자가 연락해 방문 일정을 확정합니다.</p>
             <p class="sc-form-error hidden" id="formError" role="alert"></p>

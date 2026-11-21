@@ -14,12 +14,17 @@ const ymd = (offset) => new Date(Date.now() + 9 * 3600e3 + offset * 86400e3).toI
 
 const date = ymd(3);
 const key = `smoke-${Date.now()}-abcdefgh`;
-const payload = { type: "gate", school: "테스트고", name: "홍길동", phone: "01012345678", date, time: "12:40", place: "학교 정문 앞", idempotencyKey: key };
+const payload = { type: "gate", school: "테스트고", name: "홍길동", phone: "01012345678", date, time: "12:40", place: "학교 정문 앞", consent: true, idempotencyKey: key };
 
 // 1. 검증 오류
 let r = await call("/api/applications", { method: "POST", body: JSON.stringify({ ...payload, phone: "123", date: ymd(-1), idempotencyKey: key + "x" }) });
 assert.equal(r.status, 422);
 assert.ok(r.body.fields.phone && r.body.fields.date);
+
+// 1-0. 개인정보 동의 필수
+r = await call("/api/applications", { method: "POST", body: JSON.stringify({ ...payload, consent: false, idempotencyKey: key + "n" }) });
+assert.equal(r.status, 422);
+assert.ok(r.body.fields.consent);
 
 // 1-1. 학교 안 모임 예배는 담당 선생님 확인 필수
 r = await call("/api/applications", { method: "POST", body: JSON.stringify({ ...payload, type: "worship", idempotencyKey: key + "w" }) });
@@ -78,6 +83,9 @@ assert.equal(ev2.status, "confirmed");
 await call(`/api/admin/applications/${id}`, { method: "PATCH", headers: auth, body: JSON.stringify({ status: "cancelled" }) });
 r = await call(`/api/schedule?month=${moved.slice(0, 7)}`);
 assert.ok(!r.body.events.some((e) => e.id === id));
+
+// 동의 시각 기록 확인
+assert.ok(mine.consentAt, "동의 시각 저장");
 
 // 정리: 동아리 시간 테스트 신청 취소
 await call(`/api/admin/applications/${clubId}`, { method: "PATCH", headers: auth, body: JSON.stringify({ status: "cancelled" }) });

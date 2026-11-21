@@ -172,7 +172,7 @@
     k("statusLabel").classList.add(a.status);
     k("school").textContent = a.school;
     k("typeLabel").textContent = `${TYPE_LABEL[a.type]} · ${fmtDate(a.date)} ${a.time} (${a.slotLabel || "점심시간"})`;
-    k("created").textContent = `${fmtCreated(a.createdAt)} 접수`;
+    k("created").textContent = `${fmtCreated(a.createdAt)} 접수${a.consentAt ? " · 개인정보 동의" : ""}`;
     k("name").textContent = a.name || "—";
     if (a.phone) {
       k("phone").textContent = a.phone;
@@ -303,6 +303,9 @@
     { title: "신청서", fields: [
       ["apply.title", "제목"], ["apply.desc", "제목 아래 설명", true], ["apply.teacherNote", "모임 예배 선택 시 안내", true],
       ["apply.teacherCheck", "선생님 확인 체크 문구"], ["apply.submitNote", "신청 버튼 위 안내"],
+    ] },
+    { title: "개인정보 동의", fields: [
+      ["consent.label", "체크칸 문구"], ["consent.detail", "자세히 보기 내용", true],
     ] },
     { title: "접수 완료 · 문자 안내", fields: [
       ["done.title", "완료 제목"], ["done.note", "완료 안내", true], ["sms.inline", "완료 화면 문자 안내", true],

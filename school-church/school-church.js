@@ -388,6 +388,7 @@
       slot: slotValue(),
       place: f.place.value.trim(),
       teacherOk: teacherOk.checked,
+      consent: $("#consentOk").checked,
       website: form.website.value,
     };
   }
@@ -405,6 +406,7 @@
     if (!v.time) e.time = "시간을 골라 주세요.";
     if (!v.place) e.place = "만날 장소를 적어 주세요.";
     if (v.type === "worship" && !v.teacherOk) e.teacher = "담당 선생님과 이야기를 마친 뒤 체크해 주세요.";
+    if (!v.consent) e.consent = "개인정보 수집·이용에 동의해야 신청할 수 있어요.";
     return e;
   }
 
@@ -423,7 +425,14 @@
     $(`#err-${name}`).textContent = "";
     if (name !== "type") f[name].removeAttribute("aria-invalid");
   }
+  function showConsentError(msg) {
+    $("#f-consent").classList.toggle("has-error", !!msg);
+    $("#err-consent").textContent = msg || "";
+  }
+  $("#consentOk").addEventListener("change", () => showConsentError(""));
+
   function showErrors(errors) {
+    showConsentError(errors.consent);
     if (errors.teacher) {
       teacherBox.classList.add("has-error");
       $("#err-teacher").textContent = errors.teacher;
@@ -431,6 +440,7 @@
     ["type", "school", "name", "date", "time", "place", "phone"].forEach((n) => (errors[n] ? showError(n, errors[n]) : clearError(n)));
     const first = ["type", "school", "name", "date", "time", "place", "phone"].find((n) => errors[n]);
     if (!first && errors.teacher) teacherOk.focus();
+    else if (!first && errors.consent) $("#consentOk").focus();
     if (first) {
       const el = first === "type" ? form.querySelector('input[name="type"]') : f[first];
       el.focus();
@@ -601,6 +611,7 @@
 
   $("#newApply").addEventListener("click", () => {
     form.reset();
+    showConsentError("");
     fillTimes();
     syncTeacherBox();
     placeAuto = false;

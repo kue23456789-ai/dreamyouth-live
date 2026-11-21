@@ -369,6 +369,13 @@ button.sc-cal-cell:hover { background: #fafaf8; }
 .sc-closed h3 { font-size: 20px; font-weight: 680; }
 .sc-closed p { margin-top: 8px; color: var(--ink-2); }
 .sc-content-loading [data-c] { visibility: hidden; }
+.sc-consent { margin-top: 4px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); background: #fff; }
+.sc-consent .sc-check { margin-top: 0; }
+.sc-consent.has-error { border-color: var(--danger); }
+.sc-consent-more { margin: 8px 0 0 30px; font-size: 13.5px; color: var(--ink-2); }
+.sc-consent-more summary { cursor: pointer; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; width: max-content; }
+.sc-consent-more p { margin-top: 8px; line-height: 1.7; }
+.sc-consent-more b { display: inline-block; min-width: 64px; color: var(--ink); font-weight: 620; }
 .sc-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 .sc-submit { margin-top: 8px; }
@@ -495,4 +502,10 @@ button.sc-cal-cell:hover { background: #fafaf8; }
   .sc-apply-card { grid-template-columns: 1fr; padding: 24px 20px; gap: 20px; border-radius: 14px; }
   .sc-form { grid-template-columns: 1fr; gap: 14px; }
   .sc-segment { grid-template-columns: 1fr; }
+}
+
+.sc-consent .sc-error { margin-left: 30px; }
+@media (max-width: 760px) {
+  .sc-consent-more { margin-left: 30px; }
+  .sc-consent-more b { display: block; margin-top: 6px; }
 }
