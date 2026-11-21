@@ -1,122 +1,111 @@
 /* ==========================================================
-   DREAM YOUTH HOME — home.js
-   data.json의 about 정보(사진/소개글/핵심 방향/비전)를
-   불러와서 소개 섹션을 채웁니다.
+   DREAMYOUTH HOME — home.js
+   data.json(관리자 화면 admin.html에서 수정)의 내용으로
+   첫 화면 사진·소개·핵심 방향·비전·섬기는 이·이번 주 예배를 채웁니다.
+   불러오지 못하면 HTML에 적힌 기본 문구가 그대로 보여요.
    ========================================================== */
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
 
-function textWithLineBreaks(str) {
-  return String(str || "")
-    .split("\n")
-    .map((line) => line.replace(/&/g, "&amp;").replace(/</g, "&lt;"))
-    .join("<br />");
-}
+  // 줄바꿈(\n)은 <br>로, HTML은 글자 그대로
+  function setText(el, str) {
+    if (!el || !str) return;
+    el.replaceChildren();
+    String(str).split("\n").forEach((line, i) => {
+      if (i) el.append(document.createElement("br"));
+      el.append(line);
+    });
+  }
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+  const safeUrl = (u) => (/^(https?:|tel:|mailto:)/i.test(u || "") || /^[\w./-]+$/.test(u || "") ? u : "");
 
-(async function loadAbout() {
-  try {
-    const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) return;
-    const data = await res.json();
+  async function load() {
+    let data;
+    try {
+      const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) return;
+      data = await res.json();
+    } catch (err) {
+      console.warn("data.json을 불러오지 못했어요. 기본 문구로 보여요.", err);
+      return;
+    }
     const about = data.about || {};
 
-    const leadEl = document.getElementById("aboutLead");
-    if (leadEl) leadEl.innerHTML = textWithLineBreaks(about.lead);
+    // 첫 화면 사진
+    if (about.photo && safeUrl(about.photo)) {
+      document.documentElement.style.setProperty("--hero-img", `url("${about.photo}")`);
+    }
+    // 비전 (첫 화면 제목 + 비전 상자)
+    if (about.vision) document.querySelectorAll("[data-vision]").forEach((n) => setText(n, about.vision));
 
-    const bodyEl = document.getElementById("aboutBody");
-    if (bodyEl) bodyEl.innerHTML = textWithLineBreaks(about.body);
+    setText($("aboutLead"), about.lead);
+    setText($("aboutBody"), about.body);
 
-    const grid = document.getElementById("valueGrid");
-    if (grid && Array.isArray(about.values)) {
-      grid.innerHTML = "";
-      about.values.forEach((v, i) => {
-        const card = document.createElement("article");
-        card.className = "value-card reveal";
-        card.innerHTML = `
-          <span class="value-no">${String(i + 1).padStart(2, "0")}</span>
-          <div class="value-head">
-            <h4 class="value-title">${v.title || ""}</h4>
-            <span class="value-en">${v.titleEn || ""}</span>
-          </div>
-          <p class="value-quote">${v.quote || ""}</p>
-          <p class="value-desc">${v.desc || ""}</p>
-        `;
-        grid.appendChild(card);
-      });
+    // 핵심 방향
+    const grid = $("valueGrid");
+    const values = (about.values || []).filter((v) => v && (v.title || v.desc));
+    if (grid && values.length) {
+      grid.replaceChildren(...values.map((v, i) => {
+        const card = el("article", "hm-value");
+        card.append(el("span", "hm-value-no", String(i + 1).padStart(2, "0")));
+        card.append(el("h4", "", v.title || ""));
+        if (v.titleEn) card.append(el("p", "hm-value-en", v.titleEn));
+        if (v.quote) card.append(el("p", "hm-value-quote", v.quote));
+        if (v.desc) card.append(el("p", "hm-value-desc", v.desc));
+        return card;
+      }));
     }
 
-    const visionEl = document.getElementById("visionText");
-    if (visionEl) visionEl.innerHTML = textWithLineBreaks(about.vision);
-
-    const leaderGrid = document.getElementById("leaderGrid");
-    if (leaderGrid && Array.isArray(data.leaders)) {
-      leaderGrid.innerHTML = "";
-      data.leaders.forEach((leader) => {
-        const card = document.createElement("article");
-        card.className = "leader-card reveal";
-        card.innerHTML = `
-          <div class="leader-photo-wrap">
-            ${leader.photo ? `<img src="${leader.photo}" class="leader-photo" alt="${leader.name || ""}" />` : `<div class="leader-photo-placeholder" aria-hidden="true">🙋</div>`}
-            <div class="leader-overlay">
-              <p class="leader-name">${leader.name || ""}</p>
-              <p class="leader-role">${leader.role || ""}</p>
-              <div class="leader-links">
-                ${leader.phone ? `<a class="leader-link" href="tel:${leader.phone.replace(/-/g, "")}">📞 ${leader.phone}</a>` : ""}
-                ${leader.instagram ? `<a class="leader-link" href="${leader.instagram}" target="_blank" rel="noopener">📷 인스타그램</a>` : ""}
-              </div>
-            </div>
-          </div>
-        `;
-        leaderGrid.appendChild(card);
-      });
-    }
-
-    if (about.photo) {
-      const hero = document.getElementById("aboutHero");
-      const img = document.getElementById("aboutPhoto");
-      const textBlock = document.getElementById("aboutTextBlock");
-      if (hero && img && textBlock) {
-        img.src = about.photo;
-        hero.classList.add("show");
-        textBlock.classList.add("dark");
-      }
-    }
-  } catch (err) {
-    console.error("소개 데이터를 불러오지 못했습니다:", err);
-  } finally {
-    initScrollReveal();
-  }
-})();
-
-/* ---------- 스크롤 인 애니메이션 ---------- */
-
-function initScrollReveal() {
-  const targets = document.querySelectorAll(".reveal");
-  if (!targets.length) return;
-
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
-    targets.forEach((el) => el.classList.add("in"));
-    return;
-  }
-
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("in");
-          io.unobserve(entry.target);
+    // 섬기는 이
+    const leaders = $("leaderGrid");
+    if (leaders && Array.isArray(data.leaders)) {
+      leaders.replaceChildren(...data.leaders.map((l) => {
+        const card = el("article", "hm-leader");
+        if (l.photo && safeUrl(l.photo)) {
+          const img = el("img", "hm-leader-photo");
+          img.src = l.photo;
+          img.alt = l.name || "";
+          img.loading = "lazy";
+          card.append(img);
+        } else {
+          const ph = el("div", "hm-leader-photo is-empty", "🙋");
+          ph.setAttribute("aria-hidden", "true");
+          card.append(ph);
         }
-      });
-    },
-    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
-  );
-  targets.forEach((el) => io.observe(el));
-}
+        const info = el("div");
+        info.append(el("p", "hm-leader-name", l.name || ""));
+        if (l.role) info.append(el("p", "hm-leader-role", l.role));
+        const links = el("div", "hm-leader-links");
+        if (l.phone) {
+          const a = el("a", "", `전화 ${l.phone}`);
+          a.href = `tel:${l.phone.replace(/[^0-9]/g, "")}`;
+          links.append(a);
+        }
+        if (l.instagram && safeUrl(l.instagram)) {
+          const a = el("a", "", "인스타그램");
+          a.href = l.instagram;
+          a.target = "_blank";
+          a.rel = "noopener";
+          links.append(a);
+        }
+        if (links.children.length) info.append(links);
+        card.append(info);
+        return card;
+      }));
+    }
 
-/* ---------- 상단 네비게이션 스크롤 스타일 ---------- */
+    // 이번 주 예배
+    const w = data.worship || {};
+    if (w.title) $("worshipTitle").textContent = w.title;
+    const meta = [w.verse, w.preacher].filter(Boolean).join(" · ");
+    if (meta) $("worshipMeta").textContent = meta;
+  }
 
-(function initNavScroll() {
-  const nav = document.querySelector(".site-nav");
-  if (!nav) return;
-  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 8);
-  onScroll();
-  window.addEventListener("scroll", onScroll, { passive: true });
+  load();
 })();

@@ -3,144 +3,140 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#1226C9" />
-  <title>DREAM YOUTH · 드림유스</title>
+  <meta name="theme-color" content="#111111" />
+  <title>DREAMYOUTH · 드림유스</title>
   <meta name="description" content="드림유스(Dream Youth) — 하나님을 알고, 하나님을 예배하며, 세상 가운데 하나님을 드러내는 다음세대 청소년 공동체" />
 
-  <!-- Fonts: Black Han Sans(포스터용) + Pretendard(본문) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" as="style" crossorigin
-        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-
-  <link rel="stylesheet" href="style.css" />
+  <link rel="preload" href="school-church/fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="home.css" />
 </head>
-<body class="home-body">
+<body>
+  <a class="skip-link" href="#about">본문으로 건너뛰기</a>
 
-  <!-- 상단 네비게이션 -->
-  <header class="site-nav">
-    <div class="site-nav-top">
-      <a class="site-logo" href="index.html">DREAM YOUTH</a>
-      <a class="btn-cta-small" href="worship.html">오늘 예배 <span aria-hidden="true">→</span></a>
-    </div>
-    <nav class="site-nav-links" aria-label="주요 메뉴">
+  <header class="hm-header" id="top">
+    <a class="hm-logo" href="index.html" aria-label="드림유스 홈"><b>DREAMYOUTH.</b><span>드림교회 청소년부</span></a>
+    <nav class="hm-nav" aria-label="주요 메뉴">
       <a href="#about">소개</a>
       <a href="school-church.html">스쿨처치</a>
       <a href="#location">오시는 길</a>
       <a href="#contact">섬기는 이</a>
-      <a class="sns-link" href="https://www.instagram.com/dreamyou_th" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8" />
-          <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8" />
-          <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
-        </svg>
-        인스타그램
-      </a>
-      <a class="sns-link" href="https://youtube.com/@dream_youth" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-          <rect x="2" y="5" width="20" height="14" rx="5" stroke="currentColor" stroke-width="1.8" />
-          <path d="M10.3 9.4L15 12L10.3 14.6V9.4Z" fill="currentColor" />
-        </svg>
-        유튜브
-      </a>
     </nav>
+    <a class="hm-btn hm-btn-light hm-header-cta" href="worship.html">오늘 예배 <span aria-hidden="true">→</span></a>
   </header>
 
   <main>
-    <!-- 홈 히어로 -->
-    <section class="home-hero">
-      <p class="home-hero-eyebrow">DREAM YOUTH</p>
-      <h1 class="home-hero-title">하나님을 알고, 하나님을 예배하며,<br />세상 가운데 하나님을 드러내는 다음세대</h1>
-      <p class="home-hero-sub">드림유스는 하나님을 경험하고, 삶으로 예배하는 청소년 공동체입니다.</p>
-      <div class="home-hero-actions">
-        <a class="btn-cta" href="worship.html">오늘 예배 보러가기</a>
-        <a class="btn-ghost" href="#about">드림유스 소개</a>
+    <!-- 첫 화면: 공동체 사진 + 비전 -->
+    <section class="hm-hero" aria-labelledby="heroTitle">
+      <div class="hm-hero-bg" id="heroBg" aria-hidden="true"></div>
+      <div class="hm-hero-copy">
+        <p class="hm-eyebrow">DREAM YOUTH · 드림유스</p>
+        <h1 id="heroTitle" class="hm-hero-title" data-vision>하나님을 알고, 하나님을 예배하며,<br />세상 가운데 하나님을 드러내는 다음세대</h1>
+        <p class="hm-hero-sub">드림유스는 하나님을 경험하고, 삶으로 예배하는 청소년 공동체입니다.</p>
+        <div class="hm-hero-actions">
+          <a class="hm-btn hm-btn-light" href="worship.html">오늘 예배 보러가기 <span aria-hidden="true">→</span></a>
+          <a class="hm-btn hm-btn-ghost" href="#about">드림유스 소개</a>
+        </div>
       </div>
+    </section>
+
+    <!-- 바로가기 -->
+    <section class="hm-section hm-quick" aria-label="바로가기">
+      <a class="hm-tile hm-tile-worship" href="worship.html">
+        <span class="hm-tile-label">이번 주 예배</span>
+        <strong class="hm-tile-title" id="worshipTitle">이번 주 말씀 보기</strong>
+        <span class="hm-tile-meta" id="worshipMeta">예배 순서 · 찬양 · 광고</span>
+        <span class="hm-tile-go" aria-hidden="true">→</span>
+      </a>
+      <a class="hm-tile" href="school-church.html">
+        <span class="hm-tile-label">School Church</span>
+        <strong class="hm-tile-title">우리 학교로 초대해요</strong>
+        <span class="hm-tile-meta">스쿨처치 방문 일정 보고 신청하기</span>
+        <span class="hm-tile-go" aria-hidden="true">→</span>
+      </a>
+      <a class="hm-tile" href="#location">
+        <span class="hm-tile-label">오시는 길</span>
+        <strong class="hm-tile-title">인천 남동구 논고개로 77 7층</strong>
+        <span class="hm-tile-meta">언제든 편하게 찾아오세요</span>
+        <span class="hm-tile-go" aria-hidden="true">→</span>
+      </a>
     </section>
 
     <!-- 소개 -->
-    <section class="section about-section" id="about" aria-labelledby="aboutHeading">
-      <div class="section-head">
-        <h2 id="aboutHeading">드림유스 소개</h2>
-        <p class="section-sub">청소년기, 신앙의 방향이 결정되는 때</p>
+    <section class="hm-section" id="about" aria-labelledby="aboutTitle">
+      <div class="hm-head">
+        <h2 id="aboutTitle">드림유스 <span class="nb">소개.</span></h2>
+        <p>청소년기, 신앙의 방향이 결정되는 때</p>
+      </div>
+      <div class="hm-about">
+        <p class="hm-about-lead" id="aboutLead">드림유스(Dream Youth)는 청소년들이 하나님을 인격적으로 만나고, 삶의 주인을 예수 그리스도로 고백하는 세대로 세워지는 공동체입니다.</p>
+        <p class="hm-about-body" id="aboutBody">청소년기는 단순히 ‘지나가는 시기’가 아니라 가치관과 정체성이 결정되는 중요한 때이며, 교회는 이 시기에 말씀과 공동체를 통해 건강한 신앙인으로 성장하도록 돕는 역할을 합니다.</p>
       </div>
 
-      <div id="aboutHero" class="about-hero">
-        <div class="about-hero-photo-wrap">
-          <img id="aboutPhoto" class="about-hero-photo" alt="드림유스 사진" />
+      <h3 class="hm-subtitle">핵심 방향</h3>
+      <div class="hm-values" id="valueGrid"></div>
+    </section>
+
+    <!-- 스쿨처치 -->
+    <section class="hm-section">
+      <a class="hm-banner" href="school-church.html">
+        <div class="hm-banner-bg" aria-hidden="true"></div>
+        <div class="hm-banner-body">
+          <p class="hm-banner-eyebrow">SCHOOL CHURCH</p>
+          <h2>학교에서도, 우리는 교회입니다.</h2>
+          <p>학교 안 모임 예배와 정문 앞 기도. 다른 학교 일정을 보고 우리 학교로 초대해 주세요.</p>
+          <span class="hm-btn hm-btn-light">방문 일정 보고 신청하기 <span aria-hidden="true">→</span></span>
         </div>
-      </div>
-
-      <div id="aboutTextBlock" class="about-text-block">
-        <p class="about-lead" id="aboutLead"></p>
-        <p class="about-body" id="aboutBody"></p>
-      </div>
-
-      <h3 class="value-heading reveal">핵심 방향</h3>
-      <div class="value-grid" id="valueGrid"></div>
-
-      <div class="vision-box reveal">
-        <p class="vision-label">VISION</p>
-        <p class="vision-text" id="visionText"></p>
-      </div>
+      </a>
     </section>
 
     <!-- 오시는 길 -->
-    <section class="section" id="location" aria-labelledby="locationHeading">
-      <div class="section-head reveal">
-        <h2 id="locationHeading">오시는 길</h2>
-        <p class="section-sub">언제든 편하게 찾아오세요</p>
+    <section class="hm-section" id="location" aria-labelledby="locationTitle">
+      <div class="hm-head">
+        <h2 id="locationTitle">오시는 <span class="nb">길.</span></h2>
+        <p>언제든 편하게 찾아오세요</p>
       </div>
-
-      <div class="location-card reveal">
-        <div class="location-map">
+      <div class="hm-location">
+        <div class="hm-map">
           <iframe
             src="https://www.google.com/maps?q=%EC%9D%B8%EC%B2%9C%20%EB%82%A8%EB%8F%99%EA%B5%AC%20%EB%85%BC%EA%B3%A0%EA%B0%9C%EB%A1%9C%2077%207%EC%B8%B5&output=embed"
-            title="드림유스 오시는 길 지도"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
+            title="드림유스 오시는 길 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
-        <div class="location-info">
-          <p class="location-address">인천 남동구 논고개로 77 7층</p>
-          <a class="btn-ghost-small"
-             href="https://www.google.com/maps/search/?api=1&query=%EC%9D%B8%EC%B2%9C%20%EB%82%A8%EB%8F%99%EA%B5%AC%20%EB%85%BC%EA%B3%A0%EA%B0%9C%EB%A1%9C%2077%207%EC%B8%B5"
-             target="_blank" rel="noopener">지도 앱에서 길찾기</a>
+        <div class="hm-location-info">
+          <p class="hm-location-label">주소</p>
+          <p class="hm-location-address">인천 남동구 논고개로 77 7층</p>
+          <p class="hm-location-label">문의</p>
+          <p class="hm-location-phone"><a href="tel:01089532069">010-8953-2069</a></p>
+          <div class="hm-location-actions">
+            <a class="hm-btn hm-btn-dark" href="https://map.naver.com/p/search/%EC%9D%B8%EC%B2%9C%20%EB%82%A8%EB%8F%99%EA%B5%AC%20%EB%85%BC%EA%B3%A0%EA%B0%9C%EB%A1%9C%2077" target="_blank" rel="noopener">네이버 지도</a>
+            <a class="hm-btn hm-btn-outline" href="https://www.google.com/maps/search/?api=1&query=%EC%9D%B8%EC%B2%9C%20%EB%82%A8%EB%8F%99%EA%B5%AC%20%EB%85%BC%EA%B3%A0%EA%B0%9C%EB%A1%9C%2077%207%EC%B8%B5" target="_blank" rel="noopener">구글 지도</a>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- 섬기는 이 -->
-    <section class="section" id="contact" aria-labelledby="contactHeading">
-      <div class="section-head reveal">
-        <h2 id="contactHeading">섬기는 이</h2>
-        <p class="section-sub">궁금한 점은 언제든 연락 주세요</p>
+    <section class="hm-section" id="contact" aria-labelledby="contactTitle">
+      <div class="hm-head">
+        <h2 id="contactTitle">섬기는 <span class="nb">이.</span></h2>
+        <p>궁금한 점은 언제든 연락 주세요</p>
       </div>
-
-      <div class="leader-grid" id="leaderGrid"></div>
+      <div class="hm-leaders" id="leaderGrid"></div>
     </section>
 
     <!-- SNS -->
-    <section class="section sns-section" aria-labelledby="snsHeading">
-      <div class="sns-cta reveal">
-        <h2 id="snsHeading">SNS에서도 만나요</h2>
-        <p class="section-sub">드림유스의 일상과 소식을 확인해보세요</p>
-        <div class="sns-buttons">
-          <a class="sns-btn" href="https://www.instagram.com/dreamyou_th" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
-              <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8" />
-              <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8" />
-              <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
-            </svg>
+    <section class="hm-section">
+      <div class="hm-sns">
+        <div>
+          <h2>SNS에서도 만나요</h2>
+          <p>드림유스의 일상과 소식을 확인해 보세요.</p>
+        </div>
+        <div class="hm-sns-buttons">
+          <a class="hm-btn hm-btn-outline" href="https://www.instagram.com/dreamyou_th" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8" /><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8" /><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" /></svg>
             Instagram
           </a>
-          <a class="sns-btn" href="https://youtube.com/@dream_youth" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
-              <rect x="2" y="5" width="20" height="14" rx="5" stroke="currentColor" stroke-width="1.8" />
-              <path d="M10.3 9.4L15 12L10.3 14.6V9.4Z" fill="currentColor" />
-            </svg>
+          <a class="hm-btn hm-btn-outline" href="https://youtube.com/@dream_youth" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="5" stroke="currentColor" stroke-width="1.8" /><path d="M10.3 9.4L15 12L10.3 14.6V9.4Z" fill="currentColor" /></svg>
             YouTube
           </a>
         </div>
@@ -148,17 +144,11 @@
     </section>
   </main>
 
-  <footer class="foot">
-    <p>DREAM YOUTH · 드림유스</p>
-    <p class="foot-sub">인천 남동구 논고개로 77 7층 · 010-8953-2069</p>
+  <footer class="hm-footer">
+    <p class="hm-footer-logo">DREAMYOUTH.</p>
+    <p>드림교회 청소년부 · 인천 남동구 논고개로 77 7층 · <a href="tel:01089532069">010-8953-2069</a></p>
+    <p class="hm-footer-links"><a href="worship.html">오늘 예배</a><a href="school-church.html">스쿨처치</a><a href="admin.html">관리자</a></p>
   </footer>
-
-  <a href="admin.html" class="admin-fab" aria-label="관리자 페이지">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-      <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" stroke="currentColor" stroke-width="1.7" />
-      <path d="M19.4 12.9c.04-.3.06-.6.06-.9s-.02-.6-.06-.9l2-1.6a.5.5 0 0 0 .12-.64l-1.9-3.3a.5.5 0 0 0-.6-.22l-2.36.95a7 7 0 0 0-1.56-.9l-.36-2.5a.5.5 0 0 0-.5-.43h-3.8a.5.5 0 0 0-.5.43l-.36 2.5c-.56.23-1.09.53-1.56.9l-2.36-.95a.5.5 0 0 0-.6.22l-1.9 3.3a.5.5 0 0 0 .12.64l2 1.6c-.04.3-.06.6-.06.9s.02.6.06.9l-2 1.6a.5.5 0 0 0-.12.64l1.9 3.3c.13.22.4.32.6.22l2.36-.95c.47.37 1 .67 1.56.9l.36 2.5c.05.24.26.43.5.43h3.8c.24 0 .45-.19.5-.43l.36-2.5c.56-.23 1.09-.53 1.56-.9l2.36.95c.2.1.47 0 .6-.22l1.9-3.3a.5.5 0 0 0-.12-.64l-2-1.6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" />
-    </svg>
-  </a>
 
   <script src="home.js"></script>
 </body>
